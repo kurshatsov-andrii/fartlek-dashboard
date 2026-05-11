@@ -21,7 +21,7 @@ export interface ImportResult {
 
 /**
  * In production this would fetch from the Telegram preview endpoint
- *   `https://t.me/s/aigurtfartlek`
+ *   `https://t.me/s/fartlekua`
  * (server-side, with cache + revalidate) or use the Bot API.
  *
  * For the dashboard demo we return curated mock posts so the parser pipeline

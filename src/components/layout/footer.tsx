@@ -26,7 +26,7 @@ export function Footer() {
             </p>
             <div className="mt-4 flex items-center gap-2">
               <a
-                href="https://t.me/aigurtfartlek"
+                href="https://t.me/fartlekua"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="h-9 w-9 grid place-items-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors light:bg-black/[0.04] light:border-black/10"

@@ -20,9 +20,12 @@ import type { ParsedEventFromTelegram, TelegramPost } from "@/types";
 import { UKRAINE_CITIES } from "@/data/cities";
 
 export const TELEGRAM_CHANNEL = {
-  username: "aigurtfartlek",
-  url: "https://t.me/aigurtfartlek",
-  previewUrl: "https://t.me/s/aigurtfartlek",
+  username: "fartlekua",
+  url: "https://t.me/fartlekua",
+  previewUrl: "https://t.me/s/fartlekua",
+  displayName: "Фартлек 🇺🇦 Спортівенти",
+  description:
+    "Афіша спортивних івентів в Україні: біг, велоспорт, плавання, триатлон, дуатлон, акватлон, трейл, OCR, орієнтування.",
 };
 
 const URL_REGEX = /https?:\/\/[\w./?=&%#:+\-]+/gi;
@@ -157,19 +160,38 @@ function tryParseCity(text: string): string | null {
   return null;
 }
 
-function tryParseTitle(text: string): string | null {
-  const lines = text
-    .split(/\n+/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-  if (lines.length === 0) return null;
-
-  // Prefer the first short, capitalized line that doesn't look like a URL.
-  for (const line of lines.slice(0, 3)) {
-    if (URL_REGEX.test(line)) continue;
-    if (line.length <= 120 && line.length >= 4) return line;
+function cleanCandidateTitle(raw: string): string {
+  let s = raw.trim();
+  // Strip zero-width chars Telegram preview uses as artwork anchors.
+  s = s.replace(/[\u200B-\u200D\u2060\uFEFF\u2800]/g, "");
+  s = s.trimStart();
+  // Strip a leading "(http...)" or "http..." link prefix the preview anchor adds.
+  s = s.replace(/^\(?https?:\/\/[^\s)]+\)?\s*/, "");
+  // Drop emoji clusters used as flair on the same line.
+  s = s.replace(
+    /[\u{1F300}-\u{1FAFF}\u{1F000}-\u{1F2FF}\u2600-\u27BF\uFE0F\u{1F1E6}-\u{1F1FF}]/gu,
+    "",
+  );
+  s = s.replace(/\s+/g, " ").trim();
+  // Drop label-only lines like "Дата:" / "Місто:" — these are not titles.
+  if (/^(дата|організатор|організатори|місто|де|час старту|дистанції?|маршрут)\s*:/i.test(s)) {
+    return "";
   }
-  return lines[0].slice(0, 120);
+  return s;
+}
+
+function tryParseTitle(text: string): string | null {
+  const lines = text.split(/\n+/);
+  for (const line of lines) {
+    const cleaned = cleanCandidateTitle(line);
+    if (cleaned.length >= 4 && cleaned.length <= 140) return cleaned;
+  }
+  // fallback: first non-empty cleaned line, even if very short.
+  for (const line of lines) {
+    const cleaned = cleanCandidateTitle(line);
+    if (cleaned) return cleaned.slice(0, 140);
+  }
+  return null;
 }
 
 function tryParseRegistration(links: string[], text: string): string | null {
