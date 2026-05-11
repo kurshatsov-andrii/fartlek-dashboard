@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "cdn.jsdelivr.net" },
       { protocol: "https", hostname: "telegraph.controller.bot" },
       { protocol: "http", hostname: "telegraph.controller.bot" },
+      { protocol: "https", hostname: "cdn4.telesco.pe" },
+      { protocol: "https", hostname: "cdn5.telesco.pe" },
     ],
   },
   experimental: {

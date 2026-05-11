@@ -1,10 +1,14 @@
-/** Unsplash fallback when Telegraph CDN fails (proxy block, expiry, etc.). */
-export const EVENT_COVER_FALLBACK =
-  "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=1200&h=800&fit=crop";
+/**
+ * Локальний плейсхолдер, якщо в поста немає прев'ю (не стокові фото).
+ */
+export const EVENT_COVER_FALLBACK = "/telegram-channel-cover.svg";
 
 const PROXIED_HOSTS = new Set(["telegraph.controller.bot"]);
 
-/** Same-origin proxy so the browser gets a real image/* Content-Type (Telegraph uses octet-stream). */
+/**
+ * Telegraph віддає application/octet-stream — через проксі ставимо image/*.
+ * Файли *.telesco.pe з прев'ю t.me вже мають image/jpeg; їх не проксуємо.
+ */
 export function eventCoverImageUrl(original: string): string {
   try {
     const u = new URL(original);

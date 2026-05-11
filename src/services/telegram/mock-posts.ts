@@ -20,7 +20,7 @@ export const MOCK_TELEGRAM_POSTS: TelegramPost[] = [
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Платформа реєстрації на змагання (https://fartlek.lovable.app/)`,
     date: "2026-04-23T10:21:34+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKYpGnp8Z8aKs1xH0OPlHegpqcmBJ8LAAKaFWsbuelRS8tBBIEIiiBNAQADAgADeAADOwQ"],
+    images: ["https://cdn4.telesco.pe/file/pk1F_UWYdrrV_2J8tvDTVHRjrzhscT5ncFxDoj3U_CnpaJxV3GAuBNkzf0qilfpnyjVKSBNcG8ZWCgcEy5oucteV0h_u5BG4SqjtVmAtHBqOLwBXsdA_L_6-CXYXclnquZu_ALX24wE4S_-rjIMMQQAY-VUlbk-RBwgT1t6ynD2OabxYp9v4wVsABFVljdizz-t3GJq6oasrZ5xqJIws2Vo5aOeamHFxUdRWVm5WJqQgST_21l_l4vL4thuINxl5RhKAyP2mXOdej1UzVWR6goXDZ2CwhEWRF6AMQY96zXkjuLLmDybgsiN2a4Tsajgprn-ozlZ9j1O775NBDdM4zg.jpg"],
     links: [],
     views: 2060,
   },
@@ -42,7 +42,7 @@ export const MOCK_TELEGRAM_POSTS: TelegramPost[] = [
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https://fartlek.com.ua/)`,
     date: "2026-04-24T09:26:55+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKYw2nrNynvifxwyfOHUfs5RWeb0gAB2AACmhNrG7npWUut0gAB-qws1XQBAAMCAAN4AAM7BA"],
+    images: ["https://cdn4.telesco.pe/file/ZlG3QDTIKpthm8dgJCzt-BEJwX0MeUPBP5V1iYmx6AprfAaVEIy2BQwH2ALp6dnW4nIYbLnyNsxm70_QQx08tDvxwWVRUl_Hf4z1BHDrm5FXC_omQYe3S-5UU37i9W_qg3B1VuFlsGBBESPZY16_BBVOhq8dtyaYa4J21ntveUYi71CYHGbNB3zFwLHT4oBdlFkeT1OaUUVRf4qAN41f5az9ZQ5wn8IF1wqFKzd4ssl4ysU8KcSTfHkKWL6k8zSN9IbxNsazrHOqTmJk2YPF8oGUh0mwCAlmIYph5MxXpixXbJFxGXI8f308yP4V2_4sToLz9IRqomMlhWe59leBIg.jpg"],
     links: [],
     views: 1860,
   },
@@ -66,7 +66,7 @@ Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https:/
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https://fartlek.com.ua/)`,
     date: "2026-04-25T08:30:18+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKY0mnse0ywaQ796xNa-4LDSJaNzdKpAAJiE2sbG8VpSz7YOcGAkIs3AQADAgADeQADOwQ"],
+    images: ["https://cdn4.telesco.pe/file/kn884wtfx7NGBzPKrj283Qd8_UlAA1xDa-KF0BS9OCwR_gzpsraFN53xJpTL3DRTnaUc5TvOF45A1FTOdq6SNXLFDPKrnznA4bvWgmPZve8RX5AfbLZAEvzBXz5cwN-9nnmV9UXlyQntLjEJEKODJJzX-qDWMnJ5Z4UMF51V1mLNP95tQHneg3j7iUeg_gu4-Xkb7TWPBIVk97JcDpan53fErMzS93UGWMJkZL0OZROtpcacbyBVmUQ2ydlJu9fMHPjaOD9fryF-6BiwUUJzW8hPSXKQ-UN47hCIEeszPOcMaWsHfmHeOuQVfoY67sFHhVDvLbVB1LWWc0T7UVtE1g.jpg"],
     links: [],
     views: 1900,
   },
@@ -90,7 +90,7 @@ Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https:/
 
 Приєднуйся до Fartlek Events і запускай свої забіги або бери участь уже сьогодні https://fartlek.lovable.app/ (https://fartlek.lovable.app/)`,
     date: "2026-04-26T14:05:57+00:00",
-    images: [],
+    images: ["https://cdn4.telesco.pe/file/dxLASkR84T7TrhjpqnO0PiBjGeAwOH2bT-zrg1XE1DOvwhlvVvBVNG9UMpXq2cIsNYJ09p8rmyHxC-i1COkXmk-uaIO9LFK_s6xcqlZGPa5B5HoGk00ggJXzGZK3S0QmgPSsH8f5OKDNvavnz7CF5AumJsqJpysFZ4a_zuaG8Ad4zX8xijOfcfRUMzXxbpP-X2C8nMX8fXiFcJzAQwvck3E4tkjUjQ7tRKGpwtRAOs7TlfJv6TcwgwrX2VziB0JwTXZKhgv6w-oVaasmMoZlXy8PNPsNoKSBGWfZc9qb0QAjS3IFoiDN5RltYozKNCDUDWlnZIUu1uiaYklXRV4vqA.jpg"],
     links: [],
     views: 1900,
   },
@@ -117,7 +117,7 @@ Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https:/
 Надіслати івент (https://t.me/Andres_K) | Вартість послуг (https://t.me/fartlek_services)
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)`,
     date: "2026-04-27T07:26:05+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKY4WnvDzw5s7lU8Yfaiq0Gm3OT1Ma-AAIQFGsbi4J5Sy3_Cq_3RyHUAQADAgADeQADOwQ"],
+    images: ["https://cdn4.telesco.pe/file/dYHqCwm5gIiWHGEv6mwU9tEk-0sTMcq9qZg-4iitEr3mhm6U2rBZzuwd2ckldV2uLVnFoGs2NdqFM_iiz8aQW9wmTt-_lkb_5JdFdua9NiNluPgBGZC_RRxdWcu7FeX0gl3-I8_fTJLLi4Z6IyXE-mWl2GvFLIk8F5KhN-YIrLT5qiGwy8-e5FTqNJfScA5BMiFerVZrmT36orC4LGGH5QmPKTxAYD72dsPmgfleAU9RCFrmjP8TGvxMISULVxnY58Hv0qWFbIjuopH8GeSU1xYpBoVCdDRwW_PxjuJT-pK4C_i3TzZSWg0UZ5xGDeiMW3_DjqXtXDs1Wn56-awYSQ.jpg"],
     links: [],
     views: 2200,
   },
@@ -139,7 +139,7 @@ Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https:/
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https://fartlek.com.ua/)`,
     date: "2026-04-29T10:02:06+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKZAAFp8da7aL34I6kFMyLT_rZfnxVmfAACNxdrG0nokEvor0RTVosp_gEAAwIAA3kAAzsE"],
+    images: ["https://cdn4.telesco.pe/file/G726iI-81pDb1jHOwsfB2j0CIrJKl0yxfoNMxOsEqReTSdimLhyHchLlKsJWyr96taYQ5W9N3lI33oPs2nY5_5Dj1B7EeDsQTUnqOJketrbzuaegp2o8nJOS8JqKzKZQH2rBejGbJIg7vcR7wb8hfP-I2pOs-n92auZGXYFOjzXbR8ZgMSXOUn4q9X4rl__1mdoXCueVsUf5Nf15NaRm2p9ZOhGJ6nvgg-IxxmRNIFzZ3SZWwP3FDYq41XAlbR5-m0p8eTfeaEhImvI0OCg0WsdMGtIxjGOUNhqM4nlv1EiF26qfK6gKBNWh-dQcUP5Kx6eLeLjzcA6S_pT_Q9CCcg.jpg"],
     links: [],
     views: 2060,
   },
@@ -164,7 +164,7 @@ Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https:/
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https://fartlek.com.ua/)`,
     date: "2026-05-02T14:09:55+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKZD2n2BTd18Y_kYSTvj4rqFeHL9c-yAAL_FGsbgTqxS4xrcyRnZC_fAQADAgADeQADOwQ"],
+    images: ["https://cdn4.telesco.pe/file/camXMLaKSuyOB-AO9lzlm7KGxUulug6wt6PoukpxwctIYdJrXfY6NwalBBYfP9xaSxy-zP3472h32-rzg5osEl451wm-tQDUemzkT8BVWv7T4WUtq_B0VtLvA81weonrfY9gBPwSJcNTyTO-7XaIJyIAn_yjsFNgypwy0GKevuJWgtQctSoPjNq5wX1qlmGUY4MKuZCMqaHMuBFDCgZkBThjqp3FxjKq2HJ7fzmblfJimzjCoZuqexnyBhGAlEnkjaW1RlFqo0ATx7bttCvMSpGDAQp6SoI05jUvo8Gu91LwTOs2Ade_xAJcCvhCq_inWAnToa2eX0HwSXv5D75KRg.jpg"],
     links: [],
     views: 1610,
   },
@@ -189,7 +189,7 @@ SwimRun LIGHT: 9.5 км (з них 8.1 км бігу та 1.4 км плаван�
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https://fartlek.com.ua/)`,
     date: "2026-05-03T12:10:00+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKZHmn3OwEfsi4kmWH8GUghhcEb8seMAAKdF2sbgTq5S-PL8JcphmMkAQADAgADeQADOwQ"],
+    images: ["https://cdn4.telesco.pe/file/eCeipr3mjyXjguPsx673gZjYbuDYaikDqqZAKCick5jhUCFRGAvZSqO3sc1e1aKvpgmPudFclBKETAPzDld_vpH1qvZFp9_vc81fXZXoyLKNGLX4AcSojC80wRzIT9_IVjxp4I_KZGUNSoG5b_9TcQYT_mK_VD1ZsXSDMZpIzi0IqDJ4oSYc3KsH2uP7lM_VizdG1LqBr0c60Kz5pbktcOqZIXqJxsaW4DXlGUmwUc-wJOH5ooQs7s51_UWJ92zP4EsMVBamuHCB5_-Cowj5tSu-bvBI06vuW-cNuxIGjGkQpkwZfh2eR9oHwzdnJY70iHoPerhRwJQdamLywPMcTg.jpg"],
     links: [],
     views: 1670,
   },
@@ -214,9 +214,9 @@ Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https:/
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https://fartlek.com.ua/)`,
     date: "2026-05-04T11:01:09+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKZLWn4fDCBTEqjE_JbJAK7FCGiCVTNAAK_FWsby-fIS511gYZfJgtQAQADAgADeQADOwQ"],
+    images: ["https://cdn4.telesco.pe/file/Th69RCcXCDdnrlb2IT0q0qUQGuIsPCvkMW81p8fNkuzdExsi5yMulOcaCHVKsOOVjO5P61bpMASNKUrDWsXU-iPTpzEFyxyT1AfztM-Kb1aRH18jzQe1-CQhGsof345DdLBrOuttGKw16reer4_NgCMZ5oXg3vhnuNIwnvlPmzKJofc49rRKgb73jtSjhf62v7gR0BaKFv3_Jaezip33YpDvuGACLBmmkmEzQn5HOPIAdfdRB_akj9R6QM4vq9LRIlewYl0ZXd7_iF7rwa1U45AdxVaA1ZgoB6dG1X8LDJL4GKxRivp-U0wnd6dy6E1qI-U15YYs8PLjPpB1TIh4LQ.jpg"],
     links: [],
-    views: 1600,
+    views: 1610,
   },
   {
     id: "tg-10",
@@ -240,7 +240,7 @@ Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https:/
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https://fartlek.com.ua/)`,
     date: "2026-05-05T09:41:40+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKZPWn5uo2VYGsWRaersxa8Ic52QrcPAAIZFWsby-fQS3wf0j8CwmVQAQADAgADeQADOwQ"],
+    images: ["https://cdn4.telesco.pe/file/rST2fVi9RslYzysvTmKe-UvNQjOvSfsNzgjNlY3PHVqSs9xX4sbewcQFvU7FMwK4FteYbDOsAL86yS1W4cyRmUtlMhqpkE-ra2BZHfLY6HNss0Ny77c9kVA-7vjVsn3w-7gz-vE5DPTBWde8IH4ptu4FlKL0a5Zl-NSb56ST_1HlUL6Bxmtr3srSP7KEcB_C3W3cDIHV6UFyTg36GQlitC3qklmggRUDFjXmSIcGdzBNUb3Soipmja2n9W1Nsy_fPc6iWpbFFXiBKraUVdaPJxwc17IMWNWZ_rsl9iYqic8vr9_6pdhEVY6IV5k2_kdbxBZBNTOlb5kctj9Y22XQ1Q.jpg"],
     links: [],
     views: 1570,
   },
@@ -263,9 +263,9 @@ Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https:/
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https://fartlek.com.ua/)`,
     date: "2026-05-06T09:04:29+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKZWmn7A97NMVGkxL1ytXLVgkDXbRdIAAK7FWsbv57YS43XQhDdjCWUAQADAgADeQADOwQ"],
+    images: ["https://cdn4.telesco.pe/file/uud2l0_ZigqmJ3gBKe3NEljUonaG4F4WcKsNBTgz0qilL0GFRav56hmSfuxZrNinzgH0O2C8HSsAqrGfKtvrVZyPMrpw1hlm1xyMR3YwkfRG-iZz7aR9wC-1ymBs-iE7lyEQWe15crFq8_GsR54qOMqj_Dm43U1WyaZxVoHI74eA1PlKVA7i5Npg7XYGmjo0uzulBjHNzw-S5fQ6_KGy6tRhaqmezjScq7-L3OolyoA4rS8fdze3HlEZkCFVQakp9jwiv_LTzllbsdmOyf6aeltZfJuqUDycZGJNT9oZJC2PIARWOjhq64Pr9i7T1710p-r35dBw7k5bzPrD3h4yiQ.jpg"],
     links: [],
-    views: 1380,
+    views: 1390,
   },
   {
     id: "tg-12",
@@ -287,9 +287,9 @@ Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https:/
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https://fartlek.com.ua/)`,
     date: "2026-05-07T08:41:14+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKZeWn8T_VdqElcTRd83FNeH7o7bImmAAJ1E2sbz_nhS92ChgeeZL7tAQADAgADeQADOwQ"],
+    images: ["https://cdn4.telesco.pe/file/cYdH5lEPGtMEKPEoZ6dMTppg9QY_F2j2ZbUPihs93e1AQ0W73JwWZ2fWJhkus33PSLkdg-PPYV9y0_WppZfooIoK_lH5JxpKNI8i6za0q9qVGuYH_vgwGr6w9648g_H9Xl01rhea7D-rDvIge45P3huqBfUpRJoShs0V1DakHqKnrc6WI78WEDS9kOvs8CfbsptHsMwQOxuQh99cNPaMGfwzvCYVa4bna3kCzyn-Yec_P5F4VAQz5nwZXVwipXyMlXkUHnsM4Q3ccbv52a_YreiFqme3TWGeFajabbffExyU6ckOkyweZ6nTGSSXnLFz6iNHhR5FLa7pGCiLzxWtyA.jpg"],
     links: [],
-    views: 1370,
+    views: 1380,
   },
   {
     id: "tg-13",
@@ -311,9 +311,9 @@ Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https:/
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https://fartlek.com.ua/)`,
     date: "2026-05-08T10:24:45+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKZiWn9uTo6sXDHDnk8xrSn8V0RPsFRAAL1FWsbz_nxS5CWFuQxMb-VAQADAgADeQADOwQ"],
+    images: ["https://cdn4.telesco.pe/file/OVGgt4c0bxgfVX242V42jQ2WT4EESq7KPeg-t0tN9Nzysicu_W73Pj4EtDo495yWmXQUNV078X5LvmzXNzfndlOKwuQkp6InmSrxzIF47aR3OpCap5RQ9V72oX0zgrLK5tURTwQB3epdZ9xXJQFWQ_iNYNCX4__xm_yz_01tavl_1f4168JZCplEFtshqs1LtmsefTTHaYqTPr94eb33bDgLrP1wp_lh3yTxArOsqEFGDuonwTV6iIqfwcR2aGFGGT8aDAo6eMQmZpucOt2pEINp2RuYiI_xRW7EruzwTEzIGQm-X2I8VCusZeRyJhmIMF--3p6XhKUk1SNagxR37A.jpg"],
     links: [],
-    views: 1290,
+    views: 1300,
   },
   {
     id: "tg-14",
@@ -340,9 +340,9 @@ Fun/Family 3 км + 25 перешкод
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https://fartlek.com.ua/)`,
     date: "2026-05-09T10:57:52+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKZqWn_EtepkQiiBEDWmIFEq79sU6EUAAL_EmsbPyH5S8pFTTauQUE1AQADAgADeQADOwQ"],
+    images: ["https://cdn4.telesco.pe/file/nLagPZcNq_zFY5O9wocUNkYOqWQRK0AEVdcUjmZstful8rzKhULPzTavyvCF3fmslQUMXa6dCSL3dscIN8WoZ3SRAedwcRJlJeRrMdmHh5p5TskYaRaoAjRwDRSKPs4nTv8UqS_w0kUZz4yvzyW5DCQHEHjrjQqQQYBlaCanSGKwNiD9T9RB1igWfYIvDHXF3JhzxvcSAc553q1fdjOGTqyXPW4FNy-SkBt-8BTJ2OxE9ILAa4Dhc3F9f90lWhsIOIbrEujAMm9tnpUqzchsvoNb58jQlYR1ssTs6D1KZzgsGFqZte7MFht3PeVF1GY69piVpiAe2uOIYW25CSLERQ.jpg"],
     links: [],
-    views: 1020,
+    views: 1030,
   },
   {
     id: "tg-15",
@@ -363,8 +363,8 @@ Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https:/
 Музика для бігу (https://t.me/aigurtfartlek) | SiS зі знижкою (https://sis.in.ua/?promo=fartlek)
 Fartlek Events (https://fartlek.lovable.app/) | Сайт Фартлек (https://fartlek.com.ua/)`,
     date: "2026-05-10T10:34:31+00:00",
-    images: ["https://telegraph.controller.bot/files/385411675/AgACAgIAAxkBAAKZuWoAAV8P2I1F62P2VGdiBbeiTKFy7QACcxVrG4OMAUidBec_qUWASQEAAwIAA3kAAzsE"],
+    images: ["https://cdn4.telesco.pe/file/o8l-zzL3RdyEFnGHXBDAx4Tuvhte3ruZR_FBVH2H5TyzB_A3-MAs5LA8Xr61hvhWBvsUJVDhlV9CM5KKSi7LscbPz4cF5aUCQzcOI0oN4td8LymcUtKssmS_kwPeX05ecPXaZOwSuxeUzU86PuJgYI87FbM1hqfJoThc247NA56pkiz4d0EscXJRVZA2RUgEfnkOaon9CVfCqKwkrd3R5ZLr8zyhvIS5cmhHG8D1PqbI3A-FjTyLwe1spgw5CU6L40RJAaDGWqNqvWTuQQAoyhCyC0i-sxUugv5WSoGHLDYa-T5zbP1ksKHyn6ujrnbPzxEQFzU2EqKVqoHU5XJUaw.jpg"],
     links: [],
-    views: 870,
+    views: 874,
   },
 ];

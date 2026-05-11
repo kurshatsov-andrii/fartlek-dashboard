@@ -30,6 +30,7 @@ export function EventCard({ event }: EventCardProps) {
         <EventCoverImage
           originalSrc={event.image}
           alt={event.title}
+          titleHint="Фото прев'ю з поста в Telegram @fartlekua"
           loading="lazy"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
         />

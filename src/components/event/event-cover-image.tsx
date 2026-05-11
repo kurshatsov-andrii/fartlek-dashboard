@@ -7,18 +7,21 @@ import { cn } from "@/lib/utils";
 type EventCoverImageProps = {
   originalSrc: string;
   alt: string;
+  /** Підказка при наведенні — звідки фото */
+  titleHint?: string;
   className?: string;
   loading?: "lazy" | "eager";
 };
 
 /**
- * Telegraph CDN serves covers as `application/octet-stream`; some browsers
- * refuse to paint them. We load via same-origin `/api/event-image` first,
- * then direct URL, then a static fallback.
+ * Завантажує обкладинку події: прямий URL Telegram CDN (*.telesco.pe) або
+ * проксі для telegraph.controller.bot. Резерв — /telegram-channel-cover.svg
+ * (не сторонні фотостоки).
  */
 export function EventCoverImage({
   originalSrc,
   alt,
+  titleHint = "Фото з Telegram-каналу @fartlekua",
   className,
   loading = "lazy",
 }: EventCoverImageProps) {
@@ -42,6 +45,7 @@ export function EventCoverImage({
       key={src}
       src={src}
       alt={alt}
+      title={titleHint}
       loading={loading}
       decoding="async"
       referrerPolicy="no-referrer"
