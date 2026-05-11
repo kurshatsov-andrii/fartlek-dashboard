@@ -30,13 +30,13 @@ interface ChartsSectionProps {
 }
 
 const tooltipStyle = {
-  backgroundColor: "rgba(10, 13, 20, 0.92)",
-  border: "1px solid rgba(0,255,136,0.4)",
+  backgroundColor: "rgba(10, 10, 10, 0.94)",
+  border: "1px solid rgba(255,102,51,0.4)",
   borderRadius: 12,
   padding: "8px 12px",
   fontSize: 12,
   color: "#fff",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.45)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.55)",
 };
 
 export function ChartsSection({ events }: ChartsSectionProps) {
@@ -66,8 +66,8 @@ export function ChartsSection({ events }: ChartsSectionProps) {
               >
                 <defs>
                   <linearGradient id="gEvents" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#00ff88" stopOpacity={0.5} />
-                    <stop offset="100%" stopColor="#00ff88" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#ff6633" stopOpacity={0.55} />
+                    <stop offset="100%" stopColor="#ff6633" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
@@ -91,18 +91,18 @@ export function ChartsSection({ events }: ChartsSectionProps) {
                 />
                 <Tooltip
                   contentStyle={tooltipStyle}
-                  cursor={{ fill: "rgba(0,255,136,0.06)" }}
+                  cursor={{ fill: "rgba(255,102,51,0.08)" }}
                 />
                 <Area
                   type="monotone"
                   dataKey="events"
-                  stroke="#00ff88"
+                  stroke="#ff6633"
                   strokeWidth={2.5}
                   fill="url(#gEvents)"
                   activeDot={{
                     r: 5,
-                    fill: "#00ff88",
-                    stroke: "#0a0d14",
+                    fill: "#ff6633",
+                    stroke: "#0a0a0a",
                     strokeWidth: 2,
                   }}
                   animationDuration={1200}
@@ -123,8 +123,8 @@ export function ChartsSection({ events }: ChartsSectionProps) {
               >
                 <defs>
                   <linearGradient id="gRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#ffd700" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#ff6b35" stopOpacity={1} />
+                    <stop offset="0%" stopColor="#ffeb14" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#ff6633" stopOpacity={1} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
@@ -151,7 +151,7 @@ export function ChartsSection({ events }: ChartsSectionProps) {
                 />
                 <Tooltip
                   contentStyle={tooltipStyle}
-                  cursor={{ fill: "rgba(255,215,0,0.06)" }}
+                  cursor={{ fill: "rgba(255,235,20,0.08)" }}
                   formatter={(value: number) => [formatUAH(value), "Дохід"]}
                 />
                 <Bar
@@ -198,7 +198,7 @@ export function ChartsSection({ events }: ChartsSectionProps) {
                 />
                 <Tooltip
                   contentStyle={tooltipStyle}
-                  cursor={{ fill: "rgba(0,255,136,0.06)" }}
+                  cursor={{ fill: "rgba(255,102,51,0.08)" }}
                 />
                 <Bar
                   dataKey="count"
@@ -222,12 +222,12 @@ export function ChartsSection({ events }: ChartsSectionProps) {
               <PieChart>
                 <defs>
                   <linearGradient id="gPie1" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#00ff88" />
-                    <stop offset="100%" stopColor="#00b366" />
+                    <stop offset="0%" stopColor="#ff6633" />
+                    <stop offset="100%" stopColor="#e54d1a" />
                   </linearGradient>
                   <linearGradient id="gPie2" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#3a4258" />
-                    <stop offset="100%" stopColor="#252c40" />
+                    <stop offset="0%" stopColor="#3a3a3b" />
+                    <stop offset="100%" stopColor="#1f1f1f" />
                   </linearGradient>
                 </defs>
                 <Pie

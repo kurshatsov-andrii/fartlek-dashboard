@@ -82,8 +82,8 @@ export function MapSection({ events }: MapSectionProps) {
               >
                 <defs>
                   <linearGradient id="uaFill" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="rgba(0,255,136,0.06)" />
-                    <stop offset="100%" stopColor="rgba(0,212,255,0.04)" />
+                    <stop offset="0%" stopColor="rgba(255,102,51,0.08)" />
+                    <stop offset="100%" stopColor="rgba(255,235,20,0.05)" />
                   </linearGradient>
                   <pattern
                     id="uaGrid"
@@ -101,8 +101,8 @@ export function MapSection({ events }: MapSectionProps) {
                     />
                   </pattern>
                   <radialGradient id="dotGlow">
-                    <stop offset="0%" stopColor="#00ff88" stopOpacity={1} />
-                    <stop offset="100%" stopColor="#00ff88" stopOpacity={0} />
+                    <stop offset="0%" stopColor="#ff6633" stopOpacity={1} />
+                    <stop offset="100%" stopColor="#ff6633" stopOpacity={0} />
                   </radialGradient>
                 </defs>
 
@@ -111,7 +111,7 @@ export function MapSection({ events }: MapSectionProps) {
                 <path
                   d={UKRAINE_PATH}
                   fill="url(#uaFill)"
-                  stroke="rgba(0,255,136,0.45)"
+                  stroke="rgba(255,102,51,0.5)"
                   strokeWidth="1.5"
                 />
 
@@ -137,8 +137,8 @@ export function MapSection({ events }: MapSectionProps) {
                         cx={x}
                         cy={y}
                         r={size}
-                        fill={upcoming > 0 ? "#00ff88" : "#3a4258"}
-                        stroke="rgba(6,8,12,0.9)"
+                        fill={upcoming > 0 ? "#ff6633" : "#3a3a3b"}
+                        stroke="rgba(10,10,10,0.9)"
                         strokeWidth="2"
                         className="transition-all"
                       />

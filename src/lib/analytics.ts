@@ -73,15 +73,15 @@ const CATEGORY_LABELS: Record<EventCategory, string> = {
 };
 
 const CATEGORY_COLORS: Record<EventCategory, string> = {
-  marathon: "#00ff88",
-  trail: "#00d4ff",
-  ultra: "#a855f7",
-  cycling: "#ff6b35",
+  marathon: "#ff6633",
+  trail: "#ffeb14",
+  ultra: "#9b5cff",
+  cycling: "#3da5ff",
   swimming: "#22d3ee",
-  triathlon: "#ffd700",
+  triathlon: "#ff3d7f",
   duathlon: "#f472b6",
-  kids: "#34d399",
-  obstacle: "#ff0080",
+  kids: "#facc15",
+  obstacle: "#ff8052",
 };
 
 export const categoryLabel = (c: EventCategory): string =>
@@ -118,8 +118,8 @@ export const upcomingVsFinished = (
   const up = events.filter((e) => e.state === "upcoming").length;
   const fin = events.filter((e) => e.state === "finished").length;
   return [
-    { name: "Майбутні", value: up, fill: "#00ff88" },
-    { name: "Завершені", value: fin, fill: "#3a4258" },
+    { name: "Майбутні", value: up, fill: "#ff6633" },
+    { name: "Завершені", value: fin, fill: "#3a3a3b" },
   ];
 };
 

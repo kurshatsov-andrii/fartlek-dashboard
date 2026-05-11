@@ -26,7 +26,7 @@ export function FloatingActionButton() {
           transition={{ type: "spring", stiffness: 280, damping: 22 }}
           whileHover={{ scale: 1.08 }}
           whileTap={{ scale: 0.95 }}
-          className="fixed z-40 bottom-20 right-4 lg:bottom-6 lg:right-6 h-14 w-14 rounded-full bg-neon text-ink-950 grid place-items-center shadow-neon hover:shadow-[0_0_36px_rgba(0,255,136,0.65)] transition-shadow"
+          className="fixed z-40 bottom-20 right-4 lg:bottom-6 lg:right-6 h-14 w-14 rounded-full bg-neon text-ink-950 grid place-items-center shadow-neon hover:shadow-[0_0_36px_rgba(255,102,51,0.7)] transition-shadow"
           aria-label="Нагору"
         >
           <ArrowUp className="h-6 w-6" strokeWidth={2.5} />

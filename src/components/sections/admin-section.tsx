@@ -160,8 +160,8 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                 >
                   <defs>
                     <linearGradient id="adGrow" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#00ff88" stopOpacity={0.45} />
-                      <stop offset="100%" stopColor="#00ff88" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#ff6633" stopOpacity={0.5} />
+                      <stop offset="100%" stopColor="#ff6633" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <XAxis
@@ -179,8 +179,8 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                   />
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "rgba(10,13,20,0.92)",
-                      border: "1px solid rgba(0,255,136,0.4)",
+                      backgroundColor: "rgba(10,10,10,0.94)",
+                      border: "1px solid rgba(255,102,51,0.4)",
                       borderRadius: 12,
                       fontSize: 12,
                     }}
@@ -188,7 +188,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                   <Area
                     type="monotone"
                     dataKey="events"
-                    stroke="#00ff88"
+                    stroke="#ff6633"
                     strokeWidth={2}
                     fill="url(#adGrow)"
                   />
