@@ -11,6 +11,7 @@ import { StatusBadge } from "./status-badge";
 import { CategoryIcon } from "./category-icon";
 import type { SportEvent } from "@/types";
 import { ShareButton } from "@/components/widgets/share-button";
+import { EventCoverImage } from "./event-cover-image";
 
 interface EventCardProps {
   event: SportEvent;
@@ -26,11 +27,10 @@ export function EventCard({ event }: EventCardProps) {
   return (
     <article className="group relative h-full glass rounded-2xl overflow-hidden hover:border-neon/40 hover:-translate-y-1 hover:shadow-glass transition-all duration-300 flex flex-col">
       <div className="relative aspect-[16/10] overflow-hidden">
-        <img
-          src={event.image}
+        <EventCoverImage
+          originalSrc={event.image}
           alt={event.title}
           loading="lazy"
-          decoding="async"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/30 to-transparent" />

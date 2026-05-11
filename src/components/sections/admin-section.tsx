@@ -28,6 +28,7 @@ import {
 } from "recharts";
 import { useMemo, useState } from "react";
 import { SectionHeader } from "./stats-section";
+import { EventCoverImage } from "@/components/event/event-cover-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -216,11 +217,11 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                     key={e.id}
                     className="py-3 flex items-center gap-3"
                   >
-                    <img
-                      src={e.image}
+                    <EventCoverImage
+                      originalSrc={e.image}
                       alt=""
                       loading="lazy"
-                      className="h-10 w-10 rounded-lg object-cover"
+                      className="h-10 w-10 rounded-lg object-cover shrink-0"
                     />
                     <div className="min-w-0 flex-1">
                       <div className="text-sm font-medium truncate">
