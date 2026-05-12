@@ -6,7 +6,10 @@ import type {
   TelegramPost,
 } from "@/types";
 import { getCityByName } from "@/data/cities";
-import { pickTelegramPostCoverUrl } from "@/lib/telegram-media-urls";
+import {
+  telegramPostCoverCandidates,
+} from "@/lib/telegram-media-urls";
+import { EVENT_COVER_FALLBACK } from "@/lib/event-image";
 import {
   parseTelegramPost,
   TELEGRAM_CHANNEL,
@@ -307,7 +310,11 @@ export function telegramPostsToSportEvents(posts: TelegramPost[]): SportEvent[] 
     if (seenIds.has(raw.postId)) continue;
     seenIds.add(raw.postId);
 
-    const image = pickTelegramPostCoverUrl(raw);
+    const coverCandidates = telegramPostCoverCandidates(raw);
+    const image = coverCandidates[0] ?? EVENT_COVER_FALLBACK;
+    const imageAlternates = coverCandidates
+      .slice(1)
+      .filter((u) => u !== EVENT_COVER_FALLBACK);
     const distance = extractDistanceSnippet(bodyPlain);
 
     out.push({
@@ -331,6 +338,7 @@ export function telegramPostsToSportEvents(posts: TelegramPost[]): SportEvent[] 
       tags,
       distance,
       featured: false,
+      ...(imageAlternates.length ? { imageAlternates } : {}),
     });
   }
 

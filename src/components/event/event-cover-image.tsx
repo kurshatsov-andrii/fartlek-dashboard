@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 
 type EventCoverImageProps = {
   originalSrc: string;
+  alternateSrcs?: readonly string[];
   alt: string;
   /** Підказка при наведенні — звідки фото */
   titleHint?: string;
@@ -27,21 +28,47 @@ type EventCoverImageProps = {
  * Превʼю через /api/event-image (CDN Telegram / Telegraph).
  * — Для довгих URL (великий `?url=`) — POST + blob, без обрізання query-string.
  * — При помилці GET пробуємо один раз постовий запит.
+ * — Є запасні URL з того ж допису (`alternateSrcs`), якщо основне превʼю недоступне.
  */
 export function EventCoverImage({
   originalSrc,
+  alternateSrcs,
   alt,
   titleHint = "Фото з Telegram-каналу @fartlekua",
   className,
   loading = "lazy",
 }: EventCoverImageProps) {
+  const originChain = useMemo(() => {
+    const seen = new Set<string>();
+    const out: string[] = [];
+    for (const u of [originalSrc, ...(alternateSrcs ?? [])]) {
+      const t = u?.trim();
+      if (!t || seen.has(t)) continue;
+      seen.add(t);
+      out.push(t);
+    }
+    return out;
+  }, [originalSrc, alternateSrcs]);
+
+  const originChainRef = useRef(originChain);
+  originChainRef.current = originChain;
+
+  const [originIndex, setOriginIndex] = useState(0);
+  const activeOriginal =
+    originChain[Math.min(originIndex, Math.max(0, originChain.length - 1))] ??
+    originalSrc;
+
+  useEffect(() => {
+    setOriginIndex(0);
+  }, [originalSrc, alternateSrcs]);
+
   const proxiedUrl = useMemo(
-    () => eventCoverImageUrl(originalSrc),
-    [originalSrc],
+    () => eventCoverImageUrl(activeOriginal),
+    [activeOriginal],
   );
   const preferPostBody = useMemo(
-    () => eventImagePreferPostBody(originalSrc),
-    [originalSrc],
+    () => eventImagePreferPostBody(activeOriginal),
+    [activeOriginal],
   );
 
   /** blob: URL створений із відповіді POST /api/event-image */
@@ -54,7 +81,7 @@ export function EventCoverImage({
       const res = await fetch("/api/event-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: originalSrc }),
+        body: JSON.stringify({ url: activeOriginal }),
       });
       if (!res.ok) return null;
       const b = await res.blob();
@@ -62,7 +89,7 @@ export function EventCoverImage({
     } catch {
       return null;
     }
-  }, [originalSrc]);
+  }, [activeOriginal]);
 
   useEffect(() => {
     postRecoverAttemptedRef.current = false;
@@ -70,7 +97,7 @@ export function EventCoverImage({
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
-  }, [originalSrc]);
+  }, [activeOriginal]);
 
   /** Довгі URL — лише POST, без завеликого GET */
   useEffect(() => {
@@ -88,16 +115,16 @@ export function EventCoverImage({
       if (created) URL.revokeObjectURL(created);
       setBlobUrl(null);
     };
-  }, [preferPostBody, originalSrc, loadViaPost]);
+  }, [preferPostBody, activeOriginal, loadViaPost]);
 
   const candidates = useMemo(() => {
-    if (blobUrl) return [blobUrl, originalSrc, EVENT_COVER_FALLBACK];
+    if (blobUrl) return [blobUrl, activeOriginal, EVENT_COVER_FALLBACK];
     if (preferPostBody)
-      return [EVENT_COVER_FALLBACK, originalSrc, EVENT_COVER_FALLBACK];
-    if (proxiedUrl !== originalSrc)
-      return [proxiedUrl, originalSrc, EVENT_COVER_FALLBACK];
-    return [originalSrc, EVENT_COVER_FALLBACK];
-  }, [blobUrl, preferPostBody, proxiedUrl, originalSrc]);
+      return [EVENT_COVER_FALLBACK, activeOriginal, EVENT_COVER_FALLBACK];
+    if (proxiedUrl !== activeOriginal)
+      return [proxiedUrl, activeOriginal, EVENT_COVER_FALLBACK];
+    return [activeOriginal, EVENT_COVER_FALLBACK];
+  }, [blobUrl, preferPostBody, proxiedUrl, activeOriginal]);
 
   useEffect(() => {
     candidatesRef.current = candidates;
@@ -106,14 +133,14 @@ export function EventCoverImage({
   const [index, setIndex] = useState(0);
   useEffect(() => {
     setIndex(0);
-  }, [originalSrc, blobUrl]);
+  }, [activeOriginal, blobUrl]);
 
   const src = candidates[Math.min(index, candidates.length - 1)];
 
   const onError = useCallback(() => {
     void (async () => {
       if (
-        proxiedUrl !== originalSrc &&
+        proxiedUrl !== activeOriginal &&
         blobUrl === null &&
         !preferPostBody &&
         !postRecoverAttemptedRef.current
@@ -132,16 +159,21 @@ export function EventCoverImage({
 
       setIndex((i) => {
         const pool = candidatesRef.current;
-        if (pool.length <= 1) return i;
-        return i + 1 < pool.length ? i + 1 : i;
+        if (i + 1 < pool.length) return i + 1;
+        queueMicrotask(() =>
+          setOriginIndex((o) =>
+            o + 1 < originChainRef.current.length ? o + 1 : o,
+          ),
+        );
+        return 0;
       });
     })();
   }, [
+    activeOriginal,
     blobUrl,
     loadViaPost,
     preferPostBody,
     proxiedUrl,
-    originalSrc,
   ]);
 
   return (

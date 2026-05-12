@@ -40,6 +40,8 @@ export interface SportEvent {
   /** Повний опис з тексту допису Telegram (сторінки t.me/s/… ) */
   description: string;
   image: string;
+  /** Інші CDN-URL з допису якщо основне превʼю не підвантажилось */
+  imageAlternates?: string[];
   date: string; // ISO date
   endDate?: string;
   city: string;

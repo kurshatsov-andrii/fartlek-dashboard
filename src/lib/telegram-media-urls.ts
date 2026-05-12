@@ -85,22 +85,32 @@ function shouldExcludeDecorEmojiUrl(urlNorm: string): boolean {
   return false;
 }
 
-const CDN4_TELESCO_HOST = "cdn4.telesco.pe";
-
-function isCdn4TelescopeImageUrl(httpsUrl: string): boolean {
-  try {
-    return new URL(httpsUrl).hostname.toLowerCase() === CDN4_TELESCO_HOST;
-  } catch {
-    return false;
-  }
+function isTelegramCdnPosterHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  return /\.telesco\.pe$/i.test(h) || /\.cdn-telegram\.org$/i.test(h);
 }
 
-/** Для обкладинки: серед `cdn4.telesco.pe` — другий за порядком, інакше перший повноцінний URL з того ж списку. */
+/**
+ * Обкладинка серед CDN-превʼю Telegram.
+ * Частина постів містить два «схожі» CDN-URL: другий елемент був евристикою проти смайлового кадру,
+ * але він інколи гірший (інший розмір або застаріліший). Обираємо найдовший шлях — зазвичай це основне фото афші.
+ */
 function pickCoverUrlFromPosterList(list: readonly string[]): string | undefined {
-  const cdn4 = list.filter(isCdn4TelescopeImageUrl);
-  if (cdn4.length >= 2) return cdn4[1];
-  if (cdn4.length === 1) return cdn4[0];
-  return list[1] ?? list[0];
+  if (list.length === 0) return undefined;
+
+  try {
+    const telegramCdns = list.filter((u) => {
+      try {
+        return isTelegramCdnPosterHost(new URL(u).hostname);
+      } catch {
+        return false;
+      }
+    });
+    const pool = telegramCdns.length > 0 ? telegramCdns : [...list];
+    return [...pool].sort((a, b) => b.length - a.length)[0];
+  } catch {
+    return list[0];
+  }
 }
 
 /**
@@ -207,6 +217,10 @@ export function expandTelegramPostImages(post: TelegramPost): string[] {
   };
   for (const u of post.images) add(u);
   for (const l of post.links ?? []) add(l);
+  if (post.rawHtml?.trim()) {
+    for (const u of extractTelegraphFileUrlsFromHtml(post.rawHtml))
+      add(u);
+  }
   TG_TEXT_URL_REGEX.lastIndex = 0;
   for (const u of extractImageUrlsFromPlainText(post.text)) {
     if (!seen.has(u)) {
@@ -217,14 +231,29 @@ export function expandTelegramPostImages(post: TelegramPost): string[] {
   return finalizePosterImageUrls(out);
 }
 
-export function pickTelegramPostCoverUrl(post: TelegramPost): string {
-  const rowUrls = finalizePosterImageUrls(post.images);
-  const fromRow = pickCoverUrlFromPosterList(rowUrls);
-  if (fromRow !== undefined) return fromRow;
+/** Упорядковані кандидати обкладинки (основний + запасні для картки при помилці завантаження). */
+export function telegramPostCoverCandidates(post: TelegramPost): string[] {
+  const row = finalizePosterImageUrls(post.images);
+  const expanded = expandTelegramPostImages(post);
+  const seen = new Set<string>();
+  const ordered: string[] = [];
+  for (const u of [...row, ...expanded]) {
+    if (seen.has(u)) continue;
+    seen.add(u);
+    ordered.push(u);
+  }
+  if (ordered.length === 0) return [EVENT_COVER_FALLBACK];
 
-  const list = expandTelegramPostImages(post);
-  return (
-    pickCoverUrlFromPosterList(list) ??
-    EVENT_COVER_FALLBACK
-  );
+  const pool = row.length > 0 ? row : ordered;
+  const primary =
+    pickCoverUrlFromPosterList(pool) ?? pickCoverUrlFromPosterList(ordered);
+  if (!primary) return [EVENT_COVER_FALLBACK];
+
+  const rest = ordered.filter((u) => u !== primary);
+  return [primary, ...rest].slice(0, 12);
+}
+
+export function pickTelegramPostCoverUrl(post: TelegramPost): string {
+  const c = telegramPostCoverCandidates(post);
+  return c[0] ?? EVENT_COVER_FALLBACK;
 }

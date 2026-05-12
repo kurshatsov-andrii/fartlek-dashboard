@@ -40,6 +40,7 @@ function rowToPost(r: TelegramPostRow): TelegramPost {
     links,
     views: Number(r.views ?? 0) || 0,
     likes: Number(r.likes ?? 0) || 0,
+    rawHtml: r.raw_html ?? undefined,
   };
 }
 

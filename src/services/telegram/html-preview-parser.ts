@@ -255,6 +255,7 @@ export function parseTelegramChannelWall(html: string): TelegramPost[] {
       links: Array.from(new Set(links)),
       views,
       likes,
+      rawHtml: block,
     });
   }
 
