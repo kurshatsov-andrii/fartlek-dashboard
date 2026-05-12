@@ -17,7 +17,7 @@ export function OrganizersSection({ organizers }: OrganizersSectionProps) {
         <SectionHeader
           eyebrow="Спільнота"
           title="Топ організатори"
-          description="Команди, які створюють найкультовіші спортивні події України."
+          description="Імена та міста з тексту дописів Telegram (@fartlekua), згруповані за описом організатора події."
         />
 
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -50,10 +50,12 @@ export function OrganizersSection({ organizers }: OrganizersSectionProps) {
                   <MapPin className="h-3 w-3 text-neon" />
                   {o.city}
                 </span>
-                <span className="inline-flex items-center gap-1">
-                  <Star className="h-3 w-3 text-cyber-yellow fill-cyber-yellow" />
-                  {o.rating.toFixed(1)}
-                </span>
+                {o.rating > 0 && (
+                  <span className="inline-flex items-center gap-1">
+                    <Star className="h-3 w-3 text-cyber-yellow fill-cyber-yellow" />
+                    {o.rating.toFixed(1)}
+                  </span>
+                )}
               </div>
               <div className="mt-3 flex items-center justify-center gap-1.5">
                 <Badge variant="muted">{o.eventsCount} подій</Badge>

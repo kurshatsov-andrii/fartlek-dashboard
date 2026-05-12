@@ -8,8 +8,8 @@ import {
   CalendarDays,
   Coins,
   MapPin,
+  ThumbsUp,
   TrendingUp,
-  Users,
 } from "lucide-react";
 import { AnimatedCounter } from "@/components/widgets/animated-counter";
 import { compactNumber, formatUAH } from "@/lib/utils";
@@ -69,9 +69,9 @@ export function StatsSection({ stats }: StatsSectionProps) {
       iconColor: "text-cyber-orange",
     },
     {
-      label: "Учасників",
-      value: stats.totalParticipants,
-      icon: Users,
+      label: "Лайки (❤ Telegram)",
+      value: stats.totalLikes,
+      icon: ThumbsUp,
       accent: "from-emerald-400/30 to-transparent",
       iconColor: "text-emerald-400",
       format: (n: number) => compactNumber(n),

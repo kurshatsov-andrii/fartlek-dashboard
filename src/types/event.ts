@@ -37,8 +37,8 @@ export interface SportEvent {
   id: string;
   title: string;
   slug: string;
+  /** Повний опис з тексту допису Telegram (сторінки t.me/s/… ) */
   description: string;
-  shortDescription: string;
   image: string;
   date: string; // ISO date
   endDate?: string;
@@ -54,8 +54,8 @@ export interface SportEvent {
   registrationLink: string;
   organizerId: string;
   organizerName: string;
-  participants: number;
-  maxParticipants?: number;
+  /** Кількість реакцій ❤ із публічного прев'ю Telegram для цього допису */
+  likes: number;
   views: number;
   tags: string[];
   distance?: string; // e.g. "42.2K", "21K"
@@ -85,6 +85,7 @@ export interface TelegramPost {
   images: string[];
   links: string[];
   views: number;
+  likes: number;
   rawHtml?: string;
 }
 

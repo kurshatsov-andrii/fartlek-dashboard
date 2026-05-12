@@ -59,9 +59,10 @@ export function Hero({ nextEvent, totalEvents, citiesCount }: HeroProps) {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="mt-5 max-w-xl mx-auto lg:mx-0 text-base md:text-lg text-white/70 light:text-black/70"
             >
-              Найкращий дашборд спортивних подій України. Марафони, трейли,
-              велозаїзди, запливи та триатлони — знайдіть свою подію разом із
-              біговою спільнотою.
+              Найкращий дашборд спортивних подій України за даними дописів з
+              Telegram каналу @fartlekua: забіги, трейли, велоподії, плавання,
+              триатлони та триатлон-спільні формати — знайдіть свою подію разом
+              із біговою спільнотою.
             </motion.p>
 
             <motion.div

@@ -4,8 +4,7 @@ import {
   parseTelegramPosts,
   TELEGRAM_CHANNEL,
 } from "./parser";
-import { MOCK_TELEGRAM_POSTS } from "./mock-posts";
-
+import { fetchAllTelegramPreviewPosts } from "./fetch-paginated-posts";
 export interface FetchPostsResult {
   channel: typeof TELEGRAM_CHANNEL;
   fetchedAt: string;
@@ -19,26 +18,26 @@ export interface ImportResult {
   parsed: ParsedEventFromTelegram[];
 }
 
-/**
- * In production this would fetch from the Telegram preview endpoint
- *   `https://t.me/s/fartlekua`
- * (server-side, with cache + revalidate) or use the Bot API.
- *
- * For the dashboard demo we return curated mock posts so the parser pipeline
- * can be exercised end-to-end with deterministic data.
- */
 export async function fetchChannelPosts(): Promise<FetchPostsResult> {
-  // simulate latency in client-side calls
-  await new Promise((r) => setTimeout(r, 250));
-  return {
-    channel: TELEGRAM_CHANNEL,
-    fetchedAt: new Date().toISOString(),
-    posts: MOCK_TELEGRAM_POSTS,
-  };
+  try {
+    const posts = await fetchAllTelegramPreviewPosts();
+    const fetchedAt = new Date().toISOString();
+    return {
+      channel: TELEGRAM_CHANNEL,
+      fetchedAt,
+      posts,
+    };
+  } catch (e) {
+    console.error("[fetchChannelPosts]", e);
+    return {
+      channel: TELEGRAM_CHANNEL,
+      fetchedAt: new Date().toISOString(),
+      posts: [],
+    };
+  }
 }
 
-export async function importChannelEvents(): Promise<ImportResult> {
-  const res = await fetchChannelPosts();
+export async function importChannelEvents(): Promise<ImportResult> {  const res = await fetchChannelPosts();
   return {
     channel: res.channel,
     fetchedAt: res.fetchedAt,
@@ -48,4 +47,3 @@ export async function importChannelEvents(): Promise<ImportResult> {
 }
 
 export { parseTelegramPost, parseTelegramPosts, TELEGRAM_CHANNEL };
-export { MOCK_TELEGRAM_POSTS } from "./mock-posts";

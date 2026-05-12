@@ -11,7 +11,6 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ThemeToggle } from "./theme-toggle";
 import { useFavorites } from "@/components/providers/favorites-provider";
 import { cn } from "@/lib/utils";
 
@@ -112,8 +111,6 @@ export function Navbar() {
                 </span>
               )}
             </a>
-
-            <ThemeToggle />
 
             <Button
               size="sm"

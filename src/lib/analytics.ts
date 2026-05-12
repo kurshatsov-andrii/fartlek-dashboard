@@ -8,7 +8,7 @@ export interface DashboardStats {
   revenueUAH: number;
   organizersCount: number;
   citiesCount: number;
-  totalParticipants: number;
+  totalLikes: number;
   totalViews: number;
 }
 
@@ -24,7 +24,7 @@ export const computeStats = (events: SportEvent[]): DashboardStats => {
     revenueUAH: calculateRevenue(events.length),
     organizersCount: organizers,
     citiesCount: cities,
-    totalParticipants: events.reduce((s, e) => s + e.participants, 0),
+    totalLikes: events.reduce((s, e) => s + e.likes, 0),
     totalViews: events.reduce((s, e) => s + e.views, 0),
   };
 };
@@ -61,7 +61,7 @@ export interface CategoryPoint {
 }
 
 const CATEGORY_LABELS: Record<EventCategory, string> = {
-  marathon: "Марафон",
+  marathon: "Біг",
   trail: "Трейл",
   ultra: "Ультра",
   cycling: "Велоспорт",

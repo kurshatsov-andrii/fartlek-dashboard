@@ -30,7 +30,7 @@ interface EventsSectionProps {
 }
 
 const CATEGORY_OPTIONS: { value: EventCategory; label: string }[] = [
-  { value: "marathon", label: "Марафон" },
+  { value: "marathon", label: "Біг" },
   { value: "trail", label: "Трейл" },
   { value: "ultra", label: "Ультра" },
   { value: "cycling", label: "Велоспорт" },

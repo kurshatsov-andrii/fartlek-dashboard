@@ -13,30 +13,42 @@ import { OrganizersSection } from "@/components/sections/organizers-section";
 import { FavoritesSection } from "@/components/sections/favorites-section";
 import { AdminSection } from "@/components/sections/admin-section";
 
-import {
-  EVENTS,
-  UPCOMING_EVENTS,
-  FINISHED_EVENTS,
-} from "@/data/events";
-import { ORGANIZERS } from "@/data/organizers";
-import { IMPORT_LOGS } from "@/data/import-logs";
 import { computeStats } from "@/lib/analytics";
+import { fetchTelegramDashboard } from "@/lib/telegram-dashboard-cache";
 
-export default function HomePage() {
+export const revalidate = 600;
+
+export const maxDuration = 300;
+
+export default async function HomePage() {
+  const { events: EVENTS, organizers, logs } = await fetchTelegramDashboard();
+
+  const UPCOMING_EVENTS = EVENTS.filter((e) => e.state === "upcoming").sort(
+    (a, b) =>
+      new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
+  const FINISHED_EVENTS = EVENTS.filter((e) => e.state === "finished").sort(
+    (a, b) =>
+      new Date(b.date).getTime() - new Date(a.date).getTime(),
+  );
+
   const stats = computeStats(EVENTS);
-  const nextEvent = [...UPCOMING_EVENTS]
-    .filter((e) => new Date(e.date).getTime() >= Date.now())
-    .sort(
-      (a, b) =>
-        new Date(a.date).getTime() - new Date(b.date).getTime(),
-    )[0] ?? UPCOMING_EVENTS[0];
+
+  const nextEvent =
+    [...UPCOMING_EVENTS]
+      .filter((e) => new Date(e.date).getTime() >= Date.now())
+      .sort(
+        (a, b) =>
+          new Date(a.date).getTime() - new Date(b.date).getTime(),
+      )[0] ??
+    UPCOMING_EVENTS[0];
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "ItemList",
     name: "Fartlek Події 2026",
     description:
-      "Преміум-дашборд спортивних подій України. Марафони, трейли, велоспорт, плавання та триатлони.",
+      "Спортивні події України за даними дописів Telegram каналу @fartlekua.",
     numberOfItems: EVENTS.length,
     itemListElement: UPCOMING_EVENTS.slice(0, 10).map((e, idx) => ({
       "@type": "ListItem",
@@ -71,9 +83,9 @@ export default function HomePage() {
         <CalendarSection events={EVENTS} />
         <MapSection events={EVENTS} />
         <TopEventsSection events={EVENTS} upcoming={UPCOMING_EVENTS} />
-        <OrganizersSection organizers={ORGANIZERS} />
+        <OrganizersSection organizers={organizers} />
         <FavoritesSection events={EVENTS} />
-        <AdminSection events={EVENTS} logs={IMPORT_LOGS} />
+        <AdminSection events={EVENTS} logs={logs} />
       </main>
       <Footer />
       <MobileBottomNav />

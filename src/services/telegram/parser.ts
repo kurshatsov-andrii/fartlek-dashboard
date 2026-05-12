@@ -28,7 +28,7 @@ export const TELEGRAM_CHANNEL = {
     "Афіша спортивних івентів в Україні: біг, велоспорт, плавання, триатлон, дуатлон, акватлон, трейл, OCR, орієнтування.",
 };
 
-const URL_REGEX = /https?:\/\/[\w./?=&%#:+\-]+/gi;
+export const TG_TEXT_URL_REGEX = /https?:\/\/[\w./?=&%#:+\-]+/gi;
 
 // Common Ukrainian + English date patterns:
 //  • 12 червня 2026
@@ -100,7 +100,7 @@ const CITY_ALIASES: Record<string, string> = {
   Truskavets: "Трускавець",
 };
 
-function tryParseDate(text: string): string | null {
+export function tryParseDate(text: string): string | null {
   for (const re of DATE_REGEXES) {
     const m = text.match(re);
     if (!m) continue;
@@ -196,7 +196,7 @@ function tryParseTitle(text: string): string | null {
 
 function tryParseRegistration(links: string[], text: string): string | null {
   const all = [...links];
-  const matches = text.match(URL_REGEX);
+  const matches = text.match(TG_TEXT_URL_REGEX);
   if (matches) all.push(...matches);
   if (all.length === 0) return null;
 
@@ -221,15 +221,15 @@ function tryParseRegistration(links: string[], text: string): string | null {
 
 function tryParseDescription(text: string, title: string | null): string {
   const cleaned = text
-    .replace(URL_REGEX, "")
+    .replace(TG_TEXT_URL_REGEX, "")
     .replace(/[#@]\w+/g, "")
     .replace(/\s+/g, " ")
     .trim();
   if (title) {
     const without = cleaned.replace(title, "").trim();
-    return without.slice(0, 360) || cleaned.slice(0, 360);
+    return without.slice(0, 16000) || cleaned.slice(0, 16000);
   }
-  return cleaned.slice(0, 360);
+  return cleaned.slice(0, 16000);
 }
 
 export function parseTelegramPost(
@@ -238,7 +238,7 @@ export function parseTelegramPost(
   const title = tryParseTitle(post.text);
   const date = tryParseDate(post.text);
   const city = tryParseCity(post.text);
-  const links = post.text.match(URL_REGEX) ?? [];
+  const links = post.text.match(TG_TEXT_URL_REGEX) ?? [];
   const allLinks = Array.from(new Set([...(post.links ?? []), ...links]));
   const registrationLink = tryParseRegistration(allLinks, post.text);
   const description = tryParseDescription(post.text, title);
