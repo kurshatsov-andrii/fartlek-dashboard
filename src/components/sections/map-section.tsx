@@ -6,35 +6,31 @@ import { MapPin } from "lucide-react";
 import { SectionHeader } from "./stats-section";
 import { Badge } from "@/components/ui/badge";
 import { UKRAINE_CITIES, type CityInfo } from "@/data/cities";
+import {
+  UKRAINE_ADMIN_PATH_D,
+  UKRAINE_MAP_BOUNDS,
+  UKRAINE_SVG_DIMENSIONS,
+} from "@/data/ukraine-admin-outline";
 import type { SportEvent } from "@/types";
 
 interface MapSectionProps {
   events: SportEvent[];
 }
 
-// Geographic bounds of mainland Ukraine for projection
-const BOUNDS = {
-  minLat: 44.0,
-  maxLat: 52.5,
-  minLng: 22.0,
-  maxLng: 40.5,
-};
-
-// SVG viewbox
-const SVG_W = 800;
-const SVG_H = 480;
+const { w: SVG_W, h: SVG_H } = UKRAINE_SVG_DIMENSIONS;
 
 function project(lat: number, lng: number): { x: number; y: number } {
-  const x = ((lng - BOUNDS.minLng) / (BOUNDS.maxLng - BOUNDS.minLng)) * SVG_W;
+  const x =
+    ((lng - UKRAINE_MAP_BOUNDS.minLng) /
+      (UKRAINE_MAP_BOUNDS.maxLng - UKRAINE_MAP_BOUNDS.minLng)) *
+    SVG_W;
   const y =
     SVG_H -
-    ((lat - BOUNDS.minLat) / (BOUNDS.maxLat - BOUNDS.minLat)) * SVG_H;
+    ((lat - UKRAINE_MAP_BOUNDS.minLat) /
+      (UKRAINE_MAP_BOUNDS.maxLat - UKRAINE_MAP_BOUNDS.minLat)) *
+      SVG_H;
   return { x, y };
 }
-
-// Simplified outline of Ukraine (stylized, not a precise topology)
-const UKRAINE_PATH =
-  "M 60 280 L 110 230 L 165 200 L 215 175 L 260 165 L 290 130 L 340 110 L 390 105 L 440 115 L 480 100 L 530 90 L 575 105 L 615 95 L 660 100 L 700 130 L 720 165 L 745 195 L 720 230 L 700 265 L 715 295 L 740 325 L 710 360 L 665 380 L 615 395 L 565 405 L 510 410 L 460 405 L 410 395 L 360 380 L 310 360 L 270 335 L 230 360 L 195 380 L 165 365 L 130 340 L 100 320 L 70 305 Z";
 
 export function MapSection({ events }: MapSectionProps) {
   const [hovered, setHovered] = useState<string | null>(null);
@@ -109,10 +105,10 @@ export function MapSection({ events }: MapSectionProps) {
                 <rect width={SVG_W} height={SVG_H} fill="url(#uaGrid)" />
 
                 <path
-                  d={UKRAINE_PATH}
+                  d={UKRAINE_ADMIN_PATH_D}
                   fill="url(#uaFill)"
                   stroke="rgba(255,102,51,0.5)"
-                  strokeWidth="1.5"
+                  strokeWidth="1.25"
                 />
 
                 {cityStats.map(({ city, total, upcoming }) => {
@@ -173,6 +169,10 @@ export function MapSection({ events }: MapSectionProps) {
                 Розмір крапки = кількість подій
               </span>
             </div>
+            <p className="mt-2 text-[10px] text-white/30 text-right">
+              Контур: спрощений полігон України з Кримом (world.geo.json, UKR);
+              міста по координатах lat/lng
+            </p>
           </div>
 
           <div className="glass rounded-2xl p-5">

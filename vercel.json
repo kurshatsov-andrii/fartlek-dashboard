@@ -8,5 +8,11 @@
   "github": {
     "silent": false,
     "autoJobCancelation": true
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/sync-telegram",
+      "schedule": "0 */2 * * *"
+    }
+  ]
 }

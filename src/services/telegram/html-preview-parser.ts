@@ -1,4 +1,8 @@
 import type { TelegramPost } from "@/types";
+import {
+  normalizeTelegramAssetUrl,
+  mergeTelegramPostImageSources,
+} from "@/lib/telegram-media-urls";
 
 import { TELEGRAM_CHANNEL, TG_TEXT_URL_REGEX } from "./parser";
 
@@ -17,21 +21,6 @@ function decodeEntities(s: string): string {
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
     .replace(/&nbsp;/g, " ");
-}
-
-function normalizeUrl(u: string): string | null {
-  const t = u.trim().replace(/^\/\//, "https://");
-  if (!t.startsWith("http")) return null;
-  try {
-    const url = new URL(t);
-    if (url.hostname === "telegraph.controller.bot" && url.protocol === "http:") {
-      url.protocol = "https:";
-      return url.toString();
-    }
-    return url.toString();
-  } catch {
-    return null;
-  }
 }
 
 function htmlToTelegramPlainText(innerHtml: string): string {
@@ -83,24 +72,54 @@ function extractMessagePlainText(htmlBlock: string): string {
 
 function extractReactionsHtml(htmlBlock: string): string {
   const m = htmlBlock.match(
-    /<div class="tgme_widget_message_reactions[^"]*">([\s\S]*?)<\/div>/,
+    /<div class="[^"]*\btgme_widget_message_reactions\b[^"]*"[^>]*>([\s\S]*?)<\/div>/,
   );
   return m?.[1] ?? "";
 }
 
-function parseHeartReactionCount(reactionsInner: string): number {
+/**
+ * Сума чисел у всіх видимих реакціях допису в превʼю t.me/s/…
+ * (іконка + лічильник для кожної реакції — не лише ❤).
+ */
+function parseTotalReactionsCount(reactionsInner: string): number {
   if (!reactionsInner) return 0;
-  const spans = [...reactionsInner.matchAll(/<span class="tgme_reaction">([\s\S]*?)<\/span>/g)];
-  let hearts = 0;
+  const spans = [
+    ...reactionsInner.matchAll(
+      /<span class="[^"]*\btgme_reaction\b[^"]*">([\s\S]*?)<\/span>/g,
+    ),
+  ];
+  let total = 0;
   for (const [, inner] of spans) {
-    const isHeart =
-      /<b>\s*(?:❤|❤️)\s*<\/b>/i.test(inner) ||
-      /E29DA4\.png/i.test(inner) ||
-      /heart/u.test(inner);
-    const n = /<\/i>(\d+)/.exec(inner)?.[1] ?? /(\d+)<\/span>\s*$/.exec(inner)?.[1];
-    if (isHeart && n) hearts += Number.parseInt(n, 10) || 0;
+    const n = parseReactionSpanCount(inner);
+    if (n > 0) total += n;
   }
-  return hearts;
+  return total;
+}
+
+/** Один рядок реакції в HTML превʼю Telegram. */
+function parseReactionSpanCount(inner: string): number {
+  const mCounter =
+    /class=["'][^"']*\btgme_reaction_count(?:er)?\b[^"']*["'][^>]*>([^<]+)<\//i.exec(
+      inner,
+    );
+  if (mCounter) return parseMetricCount(mCounter[1]);
+
+  const mAfterI = /<\/i>\s*([\d.,]+\s*[KMkm]?)/i.exec(inner);
+  if (mAfterI) return parseMetricCount(mAfterI[1]);
+
+  const mParen = /\(\s*([\d.,]+\s*[KMkm]?)\s*\)/i.exec(inner);
+  if (mParen) return parseMetricCount(mParen[1]);
+
+  const tailNum = /(\d[\d.,]*\s*[KMkm]?)\s*<\/span>\s*$/i.exec(
+    inner.trim(),
+  );
+  if (tailNum) return parseMetricCount(tailNum[1]);
+
+  const plain = inner.replace(/<[^>]+>/g, " ");
+  const chunks = plain.match(/\d[\d.,]*\s*[KMkm]?/gi);
+  if (chunks?.length) return parseMetricCount(chunks[chunks.length - 1]!);
+
+  return 0;
 }
 
 function extractViews(htmlBlock: string): number {
@@ -111,45 +130,78 @@ function extractViews(htmlBlock: string): number {
   return parseMetricCount(m[1]);
 }
 
-/** Media inside message bubble only (excludes channel avatar thumb). */
-function extractOrderedBubbleMedia(htmlBlock: string): string[] {
-  const bubble = htmlBlock.includes("tgme_widget_message_bubble")
-    ? (htmlBlock.split("tgme_widget_message_bubble")[1] ?? htmlBlock)
-    : htmlBlock;
+/** Малі аватари ліворуч (не основне превʼю альбомного допису). */
+function scrubMiniUserAvatars(html: string): string {
+  let s = html;
+  /** Класові варіації профільного кола поруч із іменем каналу / автора */
+  s = s.replace(
+    /<i[^>]+\b(?:tgme_widget_message_user_photo|tgme_widget_message_sender_photo)[^>]*>[\s\S]*?<\/i>/gi,
+    "",
+  );
+  s = s.replace(
+    /<a[^>]+\btgme_widget_message_from_photo\b[^>]*>[\s\S]*?<\/a>/gi,
+    "",
+  );
+  return s;
+}
+
+/**
+ * Превʼю зображень у дописі: скануємо ВЕСЬ фрагмент повідомлення.
+ * Частину з `tgme_widget_message_photo_wrap` Telegram ставить ДО текстової «бульбашки»
+ * — вирізання лише тексту після `tgme_widget_message_bubble` ховало основне фото.
+ */
+function extractOrderedMessageMedia(htmlBlock: string): string[] {
+  const scope = scrubMiniUserAvatars(htmlBlock);
   const urls: string[] = [];
   const seen = new Set<string>();
   const push = (raw: string) => {
-    const n = normalizeUrl(raw.trim());
+    const n = normalizeTelegramAssetUrl(raw.trim());
     if (!n || seen.has(n)) return;
     seen.add(n);
     urls.push(n);
   };
-  /** t.me часто задає превью так: style="width:…; background-image:url('https://cdn4…')" */
-  for (const mm of bubble.matchAll(
+  for (const mm of scope.matchAll(
     /background-image:\s*url\(\s*['"]?([^'")]+?)['"]?\s*\)/gi,
   )) {
     push(mm[1]);
   }
-  for (const mm of bubble.matchAll(
+  for (const mm of scope.matchAll(
     /(?:href|src)=["']([^"']+)["']/g,
   )) {
     const v = mm[1];
     if (/cdn\d*\.telesco\.pe/i.test(v))
       push(v.replace(/^\/\//, "https:"));
+    if (/cdn\d*\.cdn-telegram\.org/i.test(v))
+      push(v.replace(/^\/\//, "https:"));
     if (v.includes("telegraph.controller.bot"))
       push(v.startsWith("//") ? `https:${v}` : v);
   }
-  for (const mm of bubble.matchAll(/https?:\/\/cdn4\.telesco\.pe\/file\/[^\s"'>)]+/gi)) {
+  for (const mm of scope.matchAll(
+    /https?:\/\/cdn\d*\.cdn-telegram\.org\/[^\s"'>)]+/gi,
+  )) {
     push(mm[0]);
   }
-  for (const mm of bubble.matchAll(
+  for (const mm of scope.matchAll(
+    /https?:\/\/cdn\d+\.telesco\.pe\/[^\s"'>)]+/gi,
+  )) {
+    push(mm[0]);
+  }
+  for (const mm of scope.matchAll(
     /https?:\/\/telegraph\.controller\.bot[^\s"'>)]+/gi,
   )) {
     push(mm[0]);
   }
+  /** Частина превʼю — зображення в `srcset`. */
+  for (const mm of scope.matchAll(
+    /\bsrc[Ss]et\s*=\s*["']([^"']+)["']/gi,
+  )) {
+    for (const part of mm[1].split(",")) {
+      const u = part.trim().replace(/\s+\d+[.]\d+x$/i, "").trim();
+      if (u.startsWith("http")) push(u);
+    }
+  }
   return urls;
 }
-
 /**
  * Parses Telegram public channel wall HTML (`/s/{slug}` → full page document).
  */
@@ -179,9 +231,15 @@ export function parseTelegramChannelWall(html: string): TelegramPost[] {
 
     const publishedAt = timeMatch?.[1] ?? new Date().toISOString();
     const messageTextPlain = extractMessagePlainText(block);
-    const bubbleMedia = extractOrderedBubbleMedia(block);
+    const messageMedia = extractOrderedMessageMedia(block);
+    const mergedImages = mergeTelegramPostImageSources(
+      messageMedia,
+      block,
+      messageTextPlain,
+    );
     const views = extractViews(block);
-    const hearts = parseHeartReactionCount(extractReactionsHtml(block));
+    const reactionsHtml = extractReactionsHtml(block);
+    const likes = parseTotalReactionsCount(reactionsHtml);
 
     const text = messageTextPlain;
     const links = [...text.matchAll(TG_TEXT_URL_REGEX)].map((m) => m[0]);
@@ -193,10 +251,10 @@ export function parseTelegramChannelWall(html: string): TelegramPost[] {
       postId,
       text,
       date: publishedAt,
-      images: bubbleMedia.length > 0 ? bubbleMedia.slice(0, 24) : [],
+      images: mergedImages.length > 0 ? mergedImages : [],
       links: Array.from(new Set(links)),
       views,
-      likes: hearts,
+      likes,
     });
   }
 

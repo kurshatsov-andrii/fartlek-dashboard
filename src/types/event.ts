@@ -51,10 +51,11 @@ export interface SportEvent {
   category: EventCategory;
   status: EventStatus;
   state: EventState;
+  /** URL допису в Telegram (`t.me/…`); використовується для CTA та розмітки. */
   registrationLink: string;
   organizerId: string;
   organizerName: string;
-  /** Кількість реакцій ❤ із публічного прев'ю Telegram для цього допису */
+  /** Сума видимих реакцій у превʼю t.me/s/… (усі типи, не лише ❤) */
   likes: number;
   views: number;
   tags: string[];
@@ -85,6 +86,7 @@ export interface TelegramPost {
   images: string[];
   links: string[];
   views: number;
+  /** Сума всіх показаних у превʼю реакцій (t.me/s/) */
   likes: number;
   rawHtml?: string;
 }

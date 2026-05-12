@@ -8,7 +8,8 @@ export interface DashboardStats {
   revenueUAH: number;
   organizersCount: number;
   citiesCount: number;
-  totalLikes: number;
+  /** Події, де з тексту афіші вдалося виділити дистанцію */
+  eventsWithDistance: number;
   totalViews: number;
 }
 
@@ -17,6 +18,7 @@ export const computeStats = (events: SportEvent[]): DashboardStats => {
   const finished = events.filter((e) => e.state === "finished").length;
   const organizers = new Set(events.map((e) => e.organizerId)).size;
   const cities = new Set(events.map((e) => e.city)).size;
+  const withDist = events.filter((e) => Boolean(e.distance?.trim())).length;
   return {
     totalEvents: events.length,
     upcomingEvents: upcoming,
@@ -24,7 +26,7 @@ export const computeStats = (events: SportEvent[]): DashboardStats => {
     revenueUAH: calculateRevenue(events.length),
     organizersCount: organizers,
     citiesCount: cities,
-    totalLikes: events.reduce((s, e) => s + e.likes, 0),
+    eventsWithDistance: withDist,
     totalViews: events.reduce((s, e) => s + e.views, 0),
   };
 };

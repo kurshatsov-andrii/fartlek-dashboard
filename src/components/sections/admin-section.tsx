@@ -31,7 +31,6 @@ import { SectionHeader } from "./stats-section";
 import { EventCoverImage } from "@/components/event/event-cover-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   computeStats,
   eventsPerMonth,
@@ -41,6 +40,8 @@ import { formatUAH, compactNumber } from "@/lib/utils";
 import { formatEventDate, fromNow } from "@/lib/date";
 import type { ImportLogEntry, SportEvent } from "@/types";
 import { TELEGRAM_CHANNEL } from "@/services/telegram";
+
+import { QuickEventSubmitForm } from "@/components/forms/quick-event-submit-form";
 
 interface AdminSectionProps {
   events: SportEvent[];
@@ -68,9 +69,28 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
   const handleSync = async () => {
     setSyncing(true);
     try {
-      const res = await fetch("/api/telegram");
-      const data = await res.json();
-      setLastSync(`Синхронізовано ${data.count ?? 0} постів о ${new Date().toLocaleTimeString("uk-UA")}`);
+      const res = await fetch("/api/sync-telegram", { method: "POST" });
+      const data = (await res.json()) as {
+        ok?: boolean;
+        upsertedCount?: number;
+        remoteCount?: number;
+        mode?: string;
+        error?: string;
+      };
+      if (!res.ok || data.ok === false) {
+        setLastSync(data.error ?? `Помилка ${res.status}`);
+        return;
+      }
+      const cnt = data.upsertedCount ?? data.remoteCount ?? "—";
+      const modeUk =
+        data.mode === "incremental"
+          ? "нові дописи"
+          : data.mode === "bootstrap"
+            ? "перше наповнення"
+            : "оновлення метрик";
+      setLastSync(
+        `${modeUk}: збережено ${cnt} з Telegram о ${new Date().toLocaleTimeString("uk-UA")}`,
+      );
     } catch {
       setLastSync("Помилка синхронізації — спробуйте ще раз");
     } finally {
@@ -333,37 +353,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
               </ul>
             </motion.div>
 
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: 0.1 }}
-              className="glass rounded-2xl p-5"
-            >
-              <h3 className="font-display text-lg font-semibold flex items-center gap-2 mb-3">
-                <Plus className="h-4 w-4 text-neon" />
-                Швидке додавання
-              </h3>
-              <form
-                className="space-y-2"
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  setLastSync("Подію додано в чергу на модерацію ✓");
-                  (e.target as HTMLFormElement).reset();
-                }}
-              >
-                <Input placeholder="Назва події" />
-                <Input placeholder="Місто" />
-                <Input type="date" />
-                <Input placeholder="Посилання на реєстрацію" />
-                <Button type="submit" className="w-full">
-                  Зберегти подію
-                </Button>
-                <p className="text-[11px] text-white/40 text-center mt-1">
-                  100 ₴ за публікацію — оплата після підтвердження.
-                </p>
-              </form>
-            </motion.div>
+            <QuickEventSubmitForm />
           </div>
         </div>
       </div>

@@ -1,4 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750" role="img" aria-label="1:;048=:0 7 Telegram @fartlekua">
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750" role="img" aria-label="Telegram channel Fartlekua cover">
   <defs>
     <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#ff6633"/>
@@ -7,5 +8,5 @@
   </defs>
   <rect width="1200" height="750" fill="url(#g)"/>
   <text x="600" y="345" text-anchor="middle" fill="#ffffff" font-family="system-ui, Segoe UI, sans-serif" font-size="34" font-weight="600">@fartlekua</text>
-  <text x="600" y="395" text-anchor="middle" fill="#ffffffb0" font-family="system-ui, Segoe UI, sans-serif" font-size="20">1:;048=:0 7 Telegram-:0=0;C</text>
+  <text x="600" y="395" text-anchor="middle" fill="#ffffff" fill-opacity="0.69" font-family="system-ui, Segoe UI, sans-serif" font-size="20">Фото превью з каналу Telegram</text>
 </svg>
