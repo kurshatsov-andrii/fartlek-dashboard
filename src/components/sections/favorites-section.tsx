@@ -27,13 +27,13 @@ export function FavoritesSection({ events }: FavoritesSectionProps) {
         <div className="mt-8">
           {list.length === 0 ? (
             <div className="glass rounded-2xl p-10 md:p-14 text-center">
-              <div className="mx-auto h-16 w-16 rounded-full grid place-items-center bg-white/5 border border-white/10 light:bg-black/5 light:border-black/10">
-                <HeartCrack className="h-7 w-7 text-white/50 light:text-black/50" />
+              <div className="mx-auto h-16 w-16 rounded-full grid place-items-center bg-white/5 border border-white/10">
+                <HeartCrack className="h-7 w-7 text-white/50" />
               </div>
               <h3 className="mt-4 font-display text-xl font-semibold">
                 Поки немає обраних
               </h3>
-              <p className="mt-2 text-sm text-white/55 light:text-black/55">
+              <p className="mt-2 text-sm text-white/55">
                 Натисніть на іконку{" "}
                 <Heart className="inline h-3.5 w-3.5 text-cyber-pink" /> на
                 будь-якій картці події, щоб додати її сюди.

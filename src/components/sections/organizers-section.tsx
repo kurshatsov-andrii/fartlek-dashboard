@@ -42,10 +42,10 @@ export function OrganizersSection({ organizers }: OrganizersSectionProps) {
               <h3 className="mt-3 font-display text-base font-semibold">
                 {o.name}
               </h3>
-              <p className="mt-1 text-xs text-white/55 line-clamp-2 light:text-black/55">
+              <p className="mt-1 text-xs text-white/55 line-clamp-2">
                 {o.bio}
               </p>
-              <div className="mt-3 flex items-center justify-center gap-3 text-[11px] text-white/65 light:text-black/65">
+              <div className="mt-3 flex items-center justify-center gap-3 text-[11px] text-white/65">
                 <span className="inline-flex items-center gap-1">
                   <MapPin className="h-3 w-3 text-neon" />
                   {o.city}

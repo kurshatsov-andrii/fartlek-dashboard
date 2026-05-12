@@ -94,7 +94,7 @@ export function TopEventsSection({ events, upcoming }: TopEventsSectionProps) {
                   <li key={c.category}>
                     <div className="flex items-center justify-between mb-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-white/40 font-mono w-5 light:text-black/40">
+                        <span className="text-xs text-white/40 font-mono w-5">
                           #{idx + 1}
                         </span>
                         <CategoryIcon
@@ -103,7 +103,7 @@ export function TopEventsSection({ events, upcoming }: TopEventsSectionProps) {
                         />
                         <span className="text-sm font-medium">{c.label}</span>
                       </div>
-                      <span className="font-mono text-xs text-white/60 light:text-black/60">
+                      <span className="font-mono text-xs text-white/60">
                         {c.count}
                       </span>
                     </div>
@@ -133,7 +133,7 @@ export function TopEventsSection({ events, upcoming }: TopEventsSectionProps) {
             delay={0.1}
           >
             {week.length === 0 ? (
-              <p className="text-sm text-white/50 mt-4 light:text-black/50">
+              <p className="text-sm text-white/50 mt-4">
                 Подій цього тижня не заплановано.
               </p>
             ) : (
@@ -194,7 +194,7 @@ function Panel({
           {icon}
           {title}
         </h3>
-        <Trophy className="h-4 w-4 text-white/30 light:text-black/30" />
+        <Trophy className="h-4 w-4 text-white/30" />
       </div>
       {children}
     </motion.div>
@@ -215,16 +215,16 @@ function RowItem({
   accent?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors light:hover:bg-black/[0.04]">
+    <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors">
       <div
-        className="relative h-8 w-8 rounded-lg grid place-items-center font-mono text-xs font-bold bg-white/5 border border-white/10 shrink-0 light:bg-black/[0.04] light:border-black/10"
+        className="relative h-8 w-8 rounded-lg grid place-items-center font-mono text-xs font-bold bg-white/5 border border-white/10 shrink-0"
         style={accent ? { color: accent } : undefined}
       >
         {rank}
       </div>
       <div className="min-w-0 flex-1">
         <div className="text-sm font-medium truncate">{title}</div>
-        <div className="text-[11px] text-white/55 light:text-black/55">
+        <div className="text-[11px] text-white/55">
           {meta}
         </div>
       </div>

@@ -67,7 +67,7 @@ export function Navbar() {
             </span>
             <div className="leading-tight">
               <div className="font-display text-base font-bold">Fartlek</div>
-              <div className="text-[10px] uppercase tracking-[0.18em] text-white/50 light:text-black/50">
+              <div className="text-[10px] uppercase tracking-[0.18em] text-white/50">
                 Події 2026
               </div>
             </div>
@@ -78,7 +78,7 @@ export function Navbar() {
               <a
                 key={l.href}
                 href={l.href}
-                className="px-3 py-1.5 rounded-full text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors light:text-black/70 light:hover:text-black light:hover:bg-black/5"
+                className="px-3 py-1.5 rounded-full text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
               >
                 {l.label}
               </a>
@@ -89,7 +89,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={scrollToSearch}
-              className="hidden md:inline-flex items-center gap-2 h-9 px-3.5 rounded-full bg-white/5 border border-white/10 text-sm text-white/60 hover:text-white hover:bg-white/10 transition-colors light:bg-black/5 light:border-black/10 light:text-black/60 light:hover:text-black"
+              className="hidden md:inline-flex items-center gap-2 h-9 px-3.5 rounded-full bg-white/5 border border-white/10 text-sm text-white/60 hover:text-white hover:bg-white/10 transition-colors"
               aria-label="Пошук подій"
             >
               <SearchIcon className="h-4 w-4" />
@@ -101,7 +101,7 @@ export function Navbar() {
 
             <a
               href="#favorites"
-              className="relative hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors light:bg-black/5 light:border-black/10"
+              className="relative hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors"
               aria-label="Обране"
             >
               <Heart className="h-4 w-4" />
@@ -128,7 +128,7 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setMobileOpen((v) => !v)}
-              className="lg:hidden h-9 w-9 inline-flex items-center justify-center rounded-full bg-white/5 border border-white/10 light:bg-black/5 light:border-black/10"
+              className="lg:hidden h-9 w-9 inline-flex items-center justify-center rounded-full bg-white/5 border border-white/10"
               aria-label="Меню"
             >
               {mobileOpen ? (
@@ -154,7 +154,7 @@ export function Navbar() {
                   key={l.href}
                   href={l.href}
                   onClick={() => setMobileOpen(false)}
-                  className="px-4 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5 light:text-black/80 light:hover:text-black light:hover:bg-black/5"
+                  className="px-4 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5"
                 >
                   {l.label}
                 </a>

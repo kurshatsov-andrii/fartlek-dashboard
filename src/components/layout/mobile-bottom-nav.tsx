@@ -34,7 +34,7 @@ export function MobileBottomNav() {
           <a
             key={item.label}
             href={item.href}
-            className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 text-[10px] text-white/60 hover:text-neon transition-colors light:text-black/60"
+            className="relative flex flex-col items-center gap-0.5 px-3 py-1.5 text-[10px] text-white/60 hover:text-neon transition-colors"
           >
             <Icon className="h-5 w-5" />
             <span className="font-medium">{item.label}</span>

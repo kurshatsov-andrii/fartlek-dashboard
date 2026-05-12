@@ -71,7 +71,7 @@ export function CountdownTimer({ event }: CountdownTimerProps) {
           {event.title}
         </h3>
 
-        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-white/70 light:text-black/70">
+        <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-white/70">
           <span className="inline-flex items-center gap-1.5">
             <CalendarDays className="h-3.5 w-3.5 text-neon" />
             {formatEventDateLong(event.date)}
@@ -89,7 +89,7 @@ export function CountdownTimer({ event }: CountdownTimerProps) {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: 0.05 * idx }}
-              className="relative rounded-2xl bg-white/5 border border-white/10 p-3 text-center light:bg-black/[0.04] light:border-black/10"
+              className="relative rounded-2xl bg-white/5 border border-white/10 p-3 text-center"
             >
               <div
                 className="font-mono text-2xl md:text-3xl font-bold tabular-nums text-neon"
@@ -97,7 +97,7 @@ export function CountdownTimer({ event }: CountdownTimerProps) {
               >
                 {mounted ? it.value.toString().padStart(2, "0") : "--"}
               </div>
-              <div className="mt-1 text-[10px] uppercase tracking-widest text-white/50 light:text-black/50">
+              <div className="mt-1 text-[10px] uppercase tracking-widest text-white/50">
                 {it.label}
               </div>
             </motion.div>

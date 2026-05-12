@@ -81,7 +81,6 @@ export function TabsTrigger({ value, children, className }: TabsTriggerProps) {
       className={cn(
         "relative px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 z-10",
         active ? "text-ink-950" : "text-white/70 hover:text-white",
-        "light:" + (active ? "text-ink-950" : "text-black/70 hover:text-black"),
         className,
       )}
     >

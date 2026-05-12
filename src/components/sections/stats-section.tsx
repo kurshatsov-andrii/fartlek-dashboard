@@ -112,7 +112,7 @@ export function StatsSection({ stats }: StatsSectionProps) {
                 />
                 <div className="flex items-center justify-between">
                   <div
-                    className={`h-10 w-10 rounded-xl bg-white/5 border border-white/10 grid place-items-center ${t.iconColor} light:bg-black/[0.04] light:border-black/10`}
+                    className={`h-10 w-10 rounded-xl bg-white/5 border border-white/10 grid place-items-center ${t.iconColor}`}
                   >
                     <Icon className="h-5 w-5" />
                   </div>
@@ -120,11 +120,11 @@ export function StatsSection({ stats }: StatsSectionProps) {
                 <div className="mt-4 font-display text-3xl md:text-4xl font-bold tracking-tight">
                   <AnimatedCounter value={t.value} format={t.format} />
                 </div>
-                <div className="mt-1 text-xs text-white/60 light:text-black/60">
+                <div className="mt-1 text-xs text-white/60">
                   {t.label}
                 </div>
                 {t.sub && (
-                  <div className="mt-2 text-[10px] text-white/40 light:text-black/40 font-mono">
+                  <div className="mt-2 text-[10px] text-white/40 font-mono">
                     {t.sub}
                   </div>
                 )}
@@ -167,7 +167,7 @@ export function SectionHeader({
           {title}
         </h2>
         {description && (
-          <p className="mt-2 text-sm md:text-base text-white/60 light:text-black/60">
+          <p className="mt-2 text-sm md:text-base text-white/60">
             {description}
           </p>
         )}

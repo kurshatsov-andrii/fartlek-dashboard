@@ -140,7 +140,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                   <h3 className="font-display text-lg font-semibold">
                     Місячне зростання
                   </h3>
-                  <p className="text-xs text-white/55 light:text-black/55">
+                  <p className="text-xs text-white/55">
                     Кількість подій, створених щомісяця
                   </p>
                 </div>
@@ -211,7 +211,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                 </h3>
                 <Badge variant="muted">{recent.length}</Badge>
               </div>
-              <ul className="divide-y divide-white/5 light:divide-black/5">
+              <ul className="divide-y divide-white/5">
                 {recent.map((e) => (
                   <li
                     key={e.id}
@@ -227,7 +227,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                       <div className="text-sm font-medium truncate">
                         {e.title}
                       </div>
-                      <div className="text-[11px] text-white/50 light:text-black/50">
+                      <div className="text-[11px] text-white/50">
                         {formatEventDate(e.date)} · {e.city}
                       </div>
                     </div>
@@ -265,12 +265,12 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                   Відкрити
                 </a>
               </div>
-              <div className="rounded-xl bg-white/[0.03] border border-white/5 p-3 text-xs font-mono text-white/70 light:bg-black/[0.03] light:border-black/5 light:text-black/70">
+              <div className="rounded-xl bg-white/[0.03] border border-white/5 p-3 text-xs font-mono text-white/70">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-3.5 w-3.5 text-neon" />
                   <span>@{TELEGRAM_CHANNEL.username}</span>
                 </div>
-                <div className="mt-2 text-white/40 light:text-black/40">
+                <div className="mt-2 text-white/40">
                   Авто-синхронізація що 10 хв · {lastSync ?? "очікування"}
                 </div>
               </div>
@@ -309,10 +309,10 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                   >
                     <StatusIcon status={l.status} />
                     <div className="min-w-0 flex-1">
-                      <div className="text-white/85 light:text-black/85">
+                      <div className="text-white/85">
                         {l.message}
                       </div>
-                      <div className="mt-0.5 flex items-center gap-2 text-white/45 light:text-black/45">
+                      <div className="mt-0.5 flex items-center gap-2 text-white/45">
                         <span suppressHydrationWarning>
                           {fromNow(l.timestamp)}
                         </span>
@@ -359,7 +359,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                 <Button type="submit" className="w-full">
                   Зберегти подію
                 </Button>
-                <p className="text-[11px] text-white/40 text-center mt-1 light:text-black/40">
+                <p className="text-[11px] text-white/40 text-center mt-1">
                   100 ₴ за публікацію — оплата після підтвердження.
                 </p>
               </form>
@@ -408,7 +408,7 @@ function KpiCard({
     >
       <div className="flex items-center justify-between">
         <span
-          className={`h-10 w-10 rounded-xl bg-white/5 border border-white/10 grid place-items-center ${accent} light:bg-black/[0.04] light:border-black/10`}
+          className={`h-10 w-10 rounded-xl bg-white/5 border border-white/10 grid place-items-center ${accent}`}
         >
           <Icon className="h-5 w-5" />
         </span>
@@ -422,7 +422,7 @@ function KpiCard({
         </Badge>
       </div>
       <div className="mt-4 font-display text-3xl font-bold">{value}</div>
-      <div className="text-xs text-white/55 light:text-black/55">{label}</div>
+      <div className="text-xs text-white/55">{label}</div>
     </motion.div>
   );
 }

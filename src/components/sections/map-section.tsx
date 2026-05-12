@@ -160,7 +160,7 @@ export function MapSection({ events }: MapSectionProps) {
               </svg>
             </div>
 
-            <div className="mt-3 flex items-center gap-4 text-[11px] text-white/60 light:text-black/60">
+            <div className="mt-3 flex items-center gap-4 text-[11px] text-white/60">
               <span className="inline-flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full bg-neon" />
                 Майбутні події
@@ -169,7 +169,7 @@ export function MapSection({ events }: MapSectionProps) {
                 <span className="h-2 w-2 rounded-full bg-ink-600" />
                 Лише завершені
               </span>
-              <span className="ml-auto text-white/40 light:text-black/40">
+              <span className="ml-auto text-white/40">
                 Розмір крапки = кількість подій
               </span>
             </div>
@@ -186,7 +186,7 @@ export function MapSection({ events }: MapSectionProps) {
                 animate={{ opacity: 1, y: 0 }}
                 className="space-y-3"
               >
-                <div className="text-xs text-white/60 light:text-black/60">
+                <div className="text-xs text-white/60">
                   {hoveredStat.city.region}
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center">
@@ -194,7 +194,7 @@ export function MapSection({ events }: MapSectionProps) {
                     <div className="font-display text-xl font-bold">
                       {hoveredStat.total}
                     </div>
-                    <div className="text-[10px] uppercase tracking-widest text-white/50 light:text-black/50">
+                    <div className="text-[10px] uppercase tracking-widest text-white/50">
                       Всього
                     </div>
                   </div>
@@ -202,7 +202,7 @@ export function MapSection({ events }: MapSectionProps) {
                     <div className="font-display text-xl font-bold text-neon">
                       {hoveredStat.upcoming}
                     </div>
-                    <div className="text-[10px] uppercase tracking-widest text-white/50 light:text-black/50">
+                    <div className="text-[10px] uppercase tracking-widest text-white/50">
                       Майбутні
                     </div>
                   </div>
@@ -210,7 +210,7 @@ export function MapSection({ events }: MapSectionProps) {
                     <div className="font-display text-xl font-bold">
                       {hoveredStat.finished}
                     </div>
-                    <div className="text-[10px] uppercase tracking-widest text-white/50 light:text-black/50">
+                    <div className="text-[10px] uppercase tracking-widest text-white/50">
                       Завершені
                     </div>
                   </div>
@@ -227,7 +227,7 @@ export function MapSection({ events }: MapSectionProps) {
                       key={c.city.name}
                       onMouseEnter={() => setHovered(c.city.name)}
                       onMouseLeave={() => setHovered(null)}
-                      className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer light:hover:bg-black/5"
+                      className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <MapPin className="h-3.5 w-3.5 text-neon shrink-0" />

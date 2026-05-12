@@ -111,7 +111,7 @@ export function CalendarSection({ events }: CalendarSectionProps) {
               </div>
             </div>
 
-            <div className="grid grid-cols-7 gap-1.5 text-[10px] font-mono uppercase tracking-widest text-white/40 mb-2 light:text-black/40">
+            <div className="grid grid-cols-7 gap-1.5 text-[10px] font-mono uppercase tracking-widest text-white/40 mb-2">
               {WEEKDAYS.map((d) => (
                 <div key={d} className="text-center py-1">
                   {d}
@@ -134,8 +134,8 @@ export function CalendarSection({ events }: CalendarSectionProps) {
                         ? isSelected
                           ? "bg-neon/20 border-neon/60 text-neon shadow-neon-sm"
                           : hasEvents
-                            ? "bg-white/[0.04] border-white/10 hover:border-neon/40 hover:bg-neon/10 light:bg-black/[0.04] light:border-black/10"
-                            : "bg-white/[0.02] border-white/[0.04] text-white/60 hover:bg-white/[0.06] light:bg-black/[0.02] light:border-black/[0.06] light:text-black/60"
+                            ? "bg-white/[0.04] border-white/10 hover:border-neon/40 hover:bg-neon/10"
+                            : "bg-white/[0.02] border-white/[0.04] text-white/60 hover:bg-white/[0.06]"
                         : "border-transparent"
                     }`}
                   >
@@ -183,7 +183,7 @@ export function CalendarSection({ events }: CalendarSectionProps) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="text-center text-sm text-white/50 light:text-black/50 mt-8"
+                  className="text-center text-sm text-white/50 mt-8"
                 >
                   <p>Натисніть на будь-яку відмічену дату, щоб побачити заплановані події.</p>
                 </motion.div>
@@ -193,7 +193,7 @@ export function CalendarSection({ events }: CalendarSectionProps) {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="text-center text-sm text-white/50 light:text-black/50 mt-8"
+                  className="text-center text-sm text-white/50 mt-8"
                 >
                   <p>На цю дату подій не заплановано.</p>
                 </motion.div>
@@ -208,7 +208,7 @@ export function CalendarSection({ events }: CalendarSectionProps) {
                   {selectedEvents.map((e) => (
                     <li
                       key={e.id}
-                      className="rounded-xl border border-white/5 bg-white/[0.03] p-3 light:bg-black/[0.03] light:border-black/5"
+                      className="rounded-xl border border-white/5 bg-white/[0.03] p-3"
                     >
                       <div className="flex items-center gap-2">
                         <span
@@ -219,7 +219,7 @@ export function CalendarSection({ events }: CalendarSectionProps) {
                           {e.title}
                         </h4>
                       </div>
-                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-white/60 light:text-black/60">
+                      <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-white/60">
                         <span className="inline-flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
                           {e.city}

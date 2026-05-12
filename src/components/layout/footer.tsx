@@ -4,7 +4,7 @@ import { Flame, Github, Send, Twitter } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="relative mt-16 border-t border-white/5 pt-14 pb-24 lg:pb-12 light:border-black/5">
+    <footer className="relative mt-16 border-t border-white/5 pt-14 pb-24 lg:pb-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
           <div className="col-span-2">
@@ -14,12 +14,12 @@ export function Footer() {
               </span>
               <div className="leading-tight">
                 <div className="font-display text-base font-bold">Fartlek</div>
-                <div className="text-[10px] uppercase tracking-[0.18em] text-white/50 light:text-black/50">
+                <div className="text-[10px] uppercase tracking-[0.18em] text-white/50">
                   Події 2026
                 </div>
               </div>
             </a>
-            <p className="text-sm text-white/55 max-w-sm light:text-black/55">
+            <p className="text-sm text-white/55 max-w-sm">
               Дім українських спортивних подій. Відкривайте, змагайтеся та
               розвивайте спільноту бігунів, велосипедистів, плавців і
               триатлоністів.
@@ -29,21 +29,21 @@ export function Footer() {
                 href="https://t.me/fartlekua"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-9 w-9 grid place-items-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors light:bg-black/[0.04] light:border-black/10"
+                className="h-9 w-9 grid place-items-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors"
                 aria-label="Telegram"
               >
                 <Send className="h-4 w-4" />
               </a>
               <a
                 href="#"
-                className="h-9 w-9 grid place-items-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors light:bg-black/[0.04] light:border-black/10"
+                className="h-9 w-9 grid place-items-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors"
                 aria-label="Twitter"
               >
                 <Twitter className="h-4 w-4" />
               </a>
               <a
                 href="#"
-                className="h-9 w-9 grid place-items-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors light:bg-black/[0.04] light:border-black/10"
+                className="h-9 w-9 grid place-items-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors"
                 aria-label="GitHub"
               >
                 <Github className="h-4 w-4" />
@@ -52,7 +52,7 @@ export function Footer() {
           </div>
 
           <div>
-            <div className="text-xs font-mono uppercase tracking-widest text-white/40 mb-3 light:text-black/40">
+            <div className="text-xs font-mono uppercase tracking-widest text-white/40 mb-3">
               Платформа
             </div>
             <ul className="space-y-2 text-sm">
@@ -80,7 +80,7 @@ export function Footer() {
           </div>
 
           <div>
-            <div className="text-xs font-mono uppercase tracking-widest text-white/40 mb-3 light:text-black/40">
+            <div className="text-xs font-mono uppercase tracking-widest text-white/40 mb-3">
               Для організаторів
             </div>
             <ul className="space-y-2 text-sm">
@@ -108,7 +108,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-white/40 light:border-black/5 light:text-black/40">
+        <div className="mt-10 pt-6 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-white/40">
           <div>© 2026 Fartlek Events · Створено для українських атлетів</div>
           <div>Збудовано на Next.js 15 · Tailwind · Framer Motion · Recharts</div>
         </div>

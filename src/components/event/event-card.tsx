@@ -75,7 +75,7 @@ export function EventCard({ event }: EventCardProps) {
           {event.title}
         </h3>
 
-        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-white/65 light:text-black/65">
+        <div className="mt-3 flex flex-wrap gap-x-3 gap-y-1.5 text-xs text-white/65">
           <span className="inline-flex items-center gap-1.5">
             <CalendarDays className="h-3.5 w-3.5 text-neon" />
             {formatEventDate(event.date)}
@@ -87,20 +87,20 @@ export function EventCard({ event }: EventCardProps) {
         </div>
 
         <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-          <div className="flex items-center gap-1.5 text-white/65 light:text-black/65">
+          <div className="flex items-center gap-1.5 text-white/65">
             <ThumbsUp className="h-3.5 w-3.5 text-cyber-blue" />
             <span className="font-mono">
               {compactNumber(event.likes)}
             </span>
-            <span className="text-white/40 light:text-black/40">лайк.</span>
+            <span className="text-white/40">лайк.</span>
           </div>
-          <div className="flex items-center gap-1.5 text-white/65 light:text-black/65">
+          <div className="flex items-center gap-1.5 text-white/65">
             <Eye className="h-3.5 w-3.5 text-cyber-purple" />
             <span className="font-mono">{compactNumber(event.views)}</span>
-            <span className="text-white/40 light:text-black/40">перегл.</span>
+            <span className="text-white/40">перегл.</span>
           </div>
         </div>
-        <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between gap-2 light:border-black/5">
+        <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <span className="h-7 w-7 rounded-full bg-gradient-to-br from-neon to-cyber-blue grid place-items-center text-[10px] font-bold text-ink-950 shrink-0">
               {event.organizerName
@@ -114,7 +114,7 @@ export function EventCard({ event }: EventCardProps) {
                 {event.organizerName}
               </div>
               <div
-                className="text-[10px] text-white/40 light:text-black/40"
+                className="text-[10px] text-white/40"
                 suppressHydrationWarning
               >
                 {fromNow(event.date)}
@@ -132,7 +132,7 @@ export function EventCard({ event }: EventCardProps) {
               Реєстрація
             </a>
           ) : (
-            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/60 shrink-0 light:bg-black/5 light:border-black/10 light:text-black/60">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/60 shrink-0">
               Результати
             </span>
           )}

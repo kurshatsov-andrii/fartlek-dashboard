@@ -36,14 +36,14 @@ export function WeatherWidget({ city, temp, condition }: WeatherWidgetProps) {
         <Icon className="h-6 w-6" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-[11px] uppercase tracking-widest text-white/45 light:text-black/45">
+        <div className="text-[11px] uppercase tracking-widest text-white/45">
           Прогноз · {city}
         </div>
         <div className="font-display text-2xl font-bold leading-tight">
-          {temp}°<span className="text-white/40 text-sm font-normal light:text-black/40"> · {condition}</span>
+          {temp}°<span className="text-white/40 text-sm font-normal"> · {condition}</span>
         </div>
       </div>
-      <span className="text-[10px] uppercase tracking-widest text-white/30 light:text-black/30">
+      <span className="text-[10px] uppercase tracking-widest text-white/30">
         Демо
       </span>
     </motion.div>

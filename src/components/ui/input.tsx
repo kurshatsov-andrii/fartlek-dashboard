@@ -11,7 +11,6 @@ export const Input = React.forwardRef<
     ref={ref}
     className={cn(
       "h-10 w-full rounded-full bg-white/5 border border-white/10 px-4 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-neon/40 focus:border-neon/60 transition-all",
-      "light:bg-black/[0.04] light:text-black light:placeholder:text-black/40 light:border-black/10 light:focus:ring-neon/30",
       className,
     )}
     {...props}

@@ -18,7 +18,6 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
           ref={ref}
           className={cn(
             "h-10 w-full appearance-none rounded-full bg-white/5 border border-white/10 pl-4 pr-9 text-sm text-white focus:outline-none focus:ring-2 focus:ring-neon/40 focus:border-neon/60 transition-all cursor-pointer",
-            "light:bg-black/[0.04] light:text-black light:border-black/10",
             className,
           )}
           {...props}

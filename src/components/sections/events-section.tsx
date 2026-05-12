@@ -198,7 +198,7 @@ export function EventsSection({ upcoming, finished }: EventsSectionProps) {
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="mt-3 flex items-center justify-between text-xs text-white/60 light:text-black/60">
+                <div className="mt-3 flex items-center justify-between text-xs text-white/60">
                   <span className="inline-flex items-center gap-1.5">
                     <SlidersHorizontal className="h-3.5 w-3.5 text-neon" />
                     Фільтри активні
@@ -250,11 +250,11 @@ function EventGrid({ events }: { events: SportEvent[] }) {
   if (events.length === 0) {
     return (
       <div className="glass rounded-2xl p-12 text-center">
-        <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-white/5 grid place-items-center light:bg-black/5">
-          <SearchIcon className="h-7 w-7 text-white/40 light:text-black/40" />
+        <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-white/5 grid place-items-center">
+          <SearchIcon className="h-7 w-7 text-white/40" />
         </div>
         <h3 className="font-display text-xl font-semibold">Подій не знайдено</h3>
-        <p className="mt-2 text-sm text-white/60 light:text-black/60">
+        <p className="mt-2 text-sm text-white/60">
           Спробуйте змінити фільтри або пошуковий запит.
         </p>
       </div>

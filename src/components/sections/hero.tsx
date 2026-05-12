@@ -17,7 +17,7 @@ export function Hero({ nextEvent, totalEvents, citiesCount }: HeroProps) {
     <section className="relative overflow-hidden pt-32 pb-16 md:pt-40 md:pb-24">
       <div className="absolute inset-0 -z-10 bg-radial-fade" />
       <div className="absolute inset-0 -z-10 grid-bg opacity-50 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 h-[480px] w-[480px] rounded-full bg-neon/20 blur-3xl light:bg-neon/30" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 -z-10 h-[480px] w-[480px] rounded-full bg-neon/20 blur-3xl" />
 
       <div className="container mx-auto px-4">
         <div className="grid lg:grid-cols-12 gap-10 items-center">
@@ -26,13 +26,13 @@ export function Hero({ nextEvent, totalEvents, citiesCount }: HeroProps) {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
-              className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs light:bg-black/5 light:border-black/10"
+              className="inline-flex items-center gap-2 mb-6 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs"
             >
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-neon opacity-75 animate-ping" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-neon" />
               </span>
-              <span className="text-white/80 light:text-black/80">
+              <span className="text-white/80">
                 Живий календар · {totalEvents} подій · {citiesCount} міст
               </span>
             </motion.div>
@@ -45,7 +45,7 @@ export function Hero({ nextEvent, totalEvents, citiesCount }: HeroProps) {
             >
               Fartlek{" "}
               <span className="relative inline-block">
-                <span className="relative z-10 bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent light:from-black light:to-black/60">
+                <span className="relative z-10 bg-gradient-to-br from-white to-white/60 bg-clip-text text-transparent">
                   Події
                 </span>
               </span>
@@ -57,7 +57,7 @@ export function Hero({ nextEvent, totalEvents, citiesCount }: HeroProps) {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="mt-5 max-w-xl mx-auto lg:mx-0 text-base md:text-lg text-white/70 light:text-black/70"
+              className="mt-5 max-w-xl mx-auto lg:mx-0 text-base md:text-lg text-white/70"
             >
               Найкращий дашборд спортивних подій України за даними дописів з
               Telegram каналу @fartlekua: забіги, трейли, велоподії, плавання,
@@ -102,11 +102,11 @@ export function Hero({ nextEvent, totalEvents, citiesCount }: HeroProps) {
               transition={{ duration: 0.6, delay: 0.3 }}
               className="mt-10 flex flex-wrap gap-x-8 gap-y-4 justify-center lg:justify-start text-sm"
             >
-              <div className="flex items-center gap-2 text-white/70 light:text-black/70">
+              <div className="flex items-center gap-2 text-white/70">
                 <Activity className="h-4 w-4 text-neon" />
                 Жива синхронізація з Telegram
               </div>
-              <div className="flex items-center gap-2 text-white/70 light:text-black/70">
+              <div className="flex items-center gap-2 text-white/70">
                 <Sparkles className="h-4 w-4 text-neon" />
                 Преміум UI · 100 ₴ за публікацію
               </div>

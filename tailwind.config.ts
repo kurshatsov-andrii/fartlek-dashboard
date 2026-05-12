@@ -1,5 +1,4 @@
 import type { Config } from "tailwindcss";
-import plugin from "tailwindcss/plugin";
 
 const config: Config = {
   darkMode: "class",
@@ -113,11 +112,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [
-    plugin(({ addVariant }) => {
-      addVariant("light", ".light &");
-    }),
-  ],
+  plugins: [],
 };
 
 export default config;

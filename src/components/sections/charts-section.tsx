@@ -289,7 +289,7 @@ function ChartCard({
       <div className="mb-4">
         <h3 className="font-display text-lg font-semibold">{title}</h3>
         {description && (
-          <p className="text-xs text-white/55 light:text-black/55">
+          <p className="text-xs text-white/55">
             {description}
           </p>
         )}
