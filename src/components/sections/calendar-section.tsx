@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { categoryColor, categoryLabel } from "@/lib/analytics";
 import { formatEventDateLong } from "@/lib/date";
 import { monthLabelLong } from "@/lib/utils";
+import { sportEventPagePath } from "@/lib/event-detail";
 import type { SportEvent } from "@/types";
 
 interface CalendarSectionProps {
@@ -228,6 +230,12 @@ export function CalendarSection({ events }: CalendarSectionProps) {
                           {categoryLabel(e.category)}
                         </Badge>
                       </div>
+                      <Link
+                        href={sportEventPagePath(e)}
+                        className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-neon hover:text-neon-400 hover:underline underline-offset-2"
+                      >
+                        Детальніше
+                      </Link>
                     </li>
                   ))}
                 </motion.ul>

@@ -15,6 +15,7 @@ import { AdminSection } from "@/components/sections/admin-section";
 
 import { computeStats } from "@/lib/analytics";
 import { fetchTelegramDashboard } from "@/lib/telegram-dashboard-cache";
+import { sportEventAbsoluteUrl } from "@/lib/event-detail";
 
 export const revalidate = 600;
 
@@ -63,7 +64,8 @@ export default async function HomePage() {
           address: { "@type": "PostalAddress", addressCountry: "UA" },
         },
         organizer: { "@type": "Organization", name: e.organizerName },
-        url: e.registrationLink,
+        url: sportEventAbsoluteUrl(e),
+        sameAs: e.registrationLink,
       },
     })),
   };
@@ -83,7 +85,7 @@ export default async function HomePage() {
         <CalendarSection events={EVENTS} />
         <MapSection events={EVENTS} />
         <TopEventsSection events={EVENTS} upcoming={UPCOMING_EVENTS} />
-        <OrganizersSection organizers={organizers} />
+        <OrganizersSection organizers={organizers} events={EVENTS} />
         <FavoritesSection events={EVENTS} />
         <AdminSection events={EVENTS} logs={logs} />
       </main>

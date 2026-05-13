@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { MapPin } from "lucide-react";
 import { SectionHeader } from "./stats-section";
@@ -11,6 +12,9 @@ import {
   UKRAINE_MAP_BOUNDS,
   UKRAINE_SVG_DIMENSIONS,
 } from "@/data/ukraine-admin-outline";
+import { sportEventPagePath } from "@/lib/event-detail";
+import { formatEventDate } from "@/lib/date";
+import { categoryLabel } from "@/lib/analytics";
 import type { SportEvent } from "@/types";
 
 interface MapSectionProps {
@@ -18,6 +22,22 @@ interface MapSectionProps {
 }
 
 const { w: SVG_W, h: SVG_H } = UKRAINE_SVG_DIMENSIONS;
+
+type CityEventFilter = "all" | "upcoming" | "finished";
+
+function sortEventsInCity(events: SportEvent[]): SportEvent[] {
+  const up = events
+    .filter((e) => e.state === "upcoming")
+    .sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+    );
+  const fin = events
+    .filter((e) => e.state === "finished")
+    .sort(
+      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+    );
+  return [...up, ...fin];
+}
 
 function project(lat: number, lng: number): { x: number; y: number } {
   const x =
@@ -34,6 +54,8 @@ function project(lat: number, lng: number): { x: number; y: number } {
 
 export function MapSection({ events }: MapSectionProps) {
   const [hovered, setHovered] = useState<string | null>(null);
+  const [cityEventFilter, setCityEventFilter] =
+    useState<CityEventFilter>("upcoming");
 
   const cityStats = useMemo(() => {
     const map = new Map<
@@ -57,6 +79,27 @@ export function MapSection({ events }: MapSectionProps) {
   const hoveredStat = hovered
     ? cityStats.find((c) => c.city.name === hovered) ?? null
     : null;
+
+  const cityEventsForPanel = useMemo(() => {
+    if (!hoveredStat) return [];
+    return events.filter((e) => e.city === hoveredStat.city.name);
+  }, [events, hoveredStat]);
+
+  const filteredCityEvents = useMemo(() => {
+    if (cityEventFilter === "all") return sortEventsInCity(cityEventsForPanel);
+    return sortEventsInCity(
+      cityEventsForPanel.filter((e) => e.state === cityEventFilter),
+    );
+  }, [cityEventsForPanel, cityEventFilter]);
+
+  useEffect(() => {
+    if (!hovered) return;
+    const stat = cityStats.find((c) => c.city.name === hovered);
+    if (!stat) return;
+    if (stat.upcoming > 0) setCityEventFilter("upcoming");
+    else if (stat.finished > 0) setCityEventFilter("finished");
+    else setCityEventFilter("all");
+  }, [hovered, cityStats]);
 
   return (
     <section id="map" className="relative py-16 md:py-20">
@@ -119,7 +162,6 @@ export function MapSection({ events }: MapSectionProps) {
                     <g
                       key={city.name}
                       onMouseEnter={() => setHovered(city.name)}
-                      onMouseLeave={() => setHovered(null)}
                       className="cursor-pointer"
                     >
                       <circle
@@ -176,9 +218,20 @@ export function MapSection({ events }: MapSectionProps) {
           </div>
 
           <div className="glass rounded-2xl p-5">
-            <h3 className="font-display text-base font-semibold mb-3">
-              {hoveredStat ? hoveredStat.city.name : "Топ регіонів"}
-            </h3>
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <h3 className="font-display text-base font-semibold">
+                {hoveredStat ? hoveredStat.city.name : "Топ регіонів"}
+              </h3>
+              {hoveredStat ? (
+                <button
+                  type="button"
+                  onClick={() => setHovered(null)}
+                  className="shrink-0 text-[11px] text-white/45 hover:text-neon transition-colors"
+                >
+                  Усі міста
+                </button>
+              ) : null}
+            </div>
             {hoveredStat ? (
               <motion.div
                 key={hoveredStat.city.name}
@@ -190,30 +243,88 @@ export function MapSection({ events }: MapSectionProps) {
                   {hoveredStat.city.region}
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="rounded-xl bg-white/5 p-3">
+                  <button
+                    type="button"
+                    onClick={() => setCityEventFilter("all")}
+                    className={`rounded-xl p-3 transition-colors text-left sm:text-center ${
+                      cityEventFilter === "all"
+                        ? "bg-neon/10 border border-neon/30"
+                        : "bg-white/5 border border-transparent hover:bg-white/[0.07]"
+                    }`}
+                  >
                     <div className="font-display text-xl font-bold">
                       {hoveredStat.total}
                     </div>
                     <div className="text-[10px] uppercase tracking-widest text-white/50">
                       Всього
                     </div>
-                  </div>
-                  <div className="rounded-xl bg-neon/10 border border-neon/20 p-3">
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCityEventFilter("upcoming")}
+                    className={`rounded-xl p-3 transition-colors text-left sm:text-center ${
+                      cityEventFilter === "upcoming"
+                        ? "bg-neon/10 border border-neon/30"
+                        : "bg-white/5 border border-transparent hover:bg-white/[0.07]"
+                    }`}
+                  >
                     <div className="font-display text-xl font-bold text-neon">
                       {hoveredStat.upcoming}
                     </div>
                     <div className="text-[10px] uppercase tracking-widest text-white/50">
                       Майбутні
                     </div>
-                  </div>
-                  <div className="rounded-xl bg-white/5 p-3">
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCityEventFilter("finished")}
+                    className={`rounded-xl p-3 transition-colors text-left sm:text-center ${
+                      cityEventFilter === "finished"
+                        ? "bg-neon/10 border border-neon/30"
+                        : "bg-white/5 border border-transparent hover:bg-white/[0.07]"
+                    }`}
+                  >
                     <div className="font-display text-xl font-bold">
                       {hoveredStat.finished}
                     </div>
                     <div className="text-[10px] uppercase tracking-widest text-white/50">
                       Завершені
                     </div>
-                  </div>
+                  </button>
+                </div>
+
+                <div className="mt-4 max-h-[280px] overflow-y-auto pr-1 space-y-2 border-t border-white/10 pt-4">
+                  {filteredCityEvents.length === 0 ? (
+                    <p className="text-xs text-white/45 text-center py-4">
+                      Немає подій у цьому фільтрі.
+                    </p>
+                  ) : (
+                    filteredCityEvents.map((e) => (
+                      <div
+                        key={e.id}
+                        className="rounded-xl border border-white/5 bg-white/[0.03] p-3"
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <h4 className="text-sm font-semibold leading-snug min-w-0">
+                            {e.title}
+                          </h4>
+                          <Badge variant="muted" className="text-[10px] shrink-0">
+                            {categoryLabel(e.category)}
+                          </Badge>
+                        </div>
+                        <p className="mt-1 text-[11px] text-white/50">
+                          {formatEventDate(e.date)}
+                          {e.state === "finished" ? " · завершено" : ""}
+                        </p>
+                        <Link
+                          href={sportEventPagePath(e)}
+                          className="mt-2 inline-flex text-[11px] font-semibold text-neon hover:text-neon-400 hover:underline underline-offset-2"
+                        >
+                          Детальніше
+                        </Link>
+                      </div>
+                    ))
+                  )}
                 </div>
               </motion.div>
             ) : (
@@ -225,15 +336,20 @@ export function MapSection({ events }: MapSectionProps) {
                   .map((c) => (
                     <li
                       key={c.city.name}
-                      onMouseEnter={() => setHovered(c.city.name)}
-                      onMouseLeave={() => setHovered(null)}
-                      className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+                      className="flex items-center justify-between gap-2 py-1.5 px-2 rounded-lg hover:bg-white/5 transition-colors"
                     >
                       <div className="flex items-center gap-2 min-w-0">
                         <MapPin className="h-3.5 w-3.5 text-neon shrink-0" />
                         <span className="text-sm truncate">{c.city.name}</span>
                       </div>
-                      <Badge variant="muted">{c.total} подій</Badge>
+                      <button
+                        type="button"
+                        onClick={() => setHovered(c.city.name)}
+                        className="shrink-0 inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium border border-white/[0.08] bg-white/[0.03] text-white/60 hover:border-neon/35 hover:text-neon transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neon/50 cursor-pointer"
+                        aria-label={`Показати події в місті ${c.city.name}`}
+                      >
+                        {c.total} подій
+                      </button>
                     </li>
                   ))}
               </ul>

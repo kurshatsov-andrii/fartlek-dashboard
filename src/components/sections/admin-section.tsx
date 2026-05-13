@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   AlertTriangle,
@@ -38,10 +39,20 @@ import {
 } from "@/lib/analytics";
 import { formatUAH, compactNumber } from "@/lib/utils";
 import { formatEventDate, fromNow } from "@/lib/date";
+import { sportEventPagePath } from "@/lib/event-detail";
 import type { ImportLogEntry, SportEvent } from "@/types";
 import { TELEGRAM_CHANNEL } from "@/services/telegram";
-
 import { QuickEventSubmitForm } from "@/components/forms/quick-event-submit-form";
+
+/** Для сортування «останніх з Telegram»: час допису, інакше номер допису. */
+function telegramRecencyKey(e: SportEvent): number {
+  if (e.telegramPostDate) {
+    const t = new Date(e.telegramPostDate).getTime();
+    if (!Number.isNaN(t)) return t;
+  }
+  const m = /^evt-tg-(\d+)$/.exec(e.id);
+  return m ? Number.parseInt(m[1], 10) : 0;
+}
 
 interface AdminSectionProps {
   events: SportEvent[];
@@ -59,8 +70,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
     () =>
       [...events]
         .sort(
-          (a, b) =>
-            new Date(b.date).getTime() - new Date(a.date).getTime(),
+          (a, b) => telegramRecencyKey(b) - telegramRecencyKey(a),
         )
         .slice(0, 6),
     [events],
@@ -251,12 +261,20 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                         {formatEventDate(e.date)} · {e.city}
                       </div>
                     </div>
-                    <Badge
-                      variant={e.state === "upcoming" ? "neon" : "muted"}
-                      className="text-[10px]"
-                    >
-                      {e.state === "upcoming" ? "майбутня" : "завершена"}
-                    </Badge>
+                    <div className="shrink-0 flex flex-col items-end gap-1.5">
+                      <Badge
+                        variant={e.state === "upcoming" ? "neon" : "muted"}
+                        className="text-[10px]"
+                      >
+                        {e.state === "upcoming" ? "майбутня" : "завершена"}
+                      </Badge>
+                      <Link
+                        href={sportEventPagePath(e)}
+                        className="text-[10px] font-semibold text-neon hover:text-neon-400 hover:underline underline-offset-2 whitespace-nowrap"
+                      >
+                        Детальніше
+                      </Link>
+                    </div>
                   </li>
                 ))}
               </ul>

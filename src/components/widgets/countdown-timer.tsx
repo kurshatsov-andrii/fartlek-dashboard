@@ -1,11 +1,13 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { CalendarDays, MapPin, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatEventDateLong } from "@/lib/date";
 import { categoryLabel } from "@/lib/analytics";
+import { sportEventPagePath } from "@/lib/event-detail";
 import type { SportEvent } from "@/types";
 
 interface CountdownTimerProps {
@@ -104,14 +106,12 @@ export function CountdownTimer({ event }: CountdownTimerProps) {
           ))}
         </div>
 
-        <a
-          href={event.registrationLink}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href={sportEventPagePath(event)}
           className="mt-5 btn-neon w-full justify-center"
         >
-          Зареєструватися
-        </a>
+          Детальніше
+        </Link>
       </div>
     </div>
   );

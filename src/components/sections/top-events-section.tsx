@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import {
   CalendarClock,
@@ -19,6 +20,7 @@ import {
   upcomingThisWeek,
 } from "@/lib/analytics";
 import { formatEventDate, fromNow } from "@/lib/date";
+import { sportEventPagePath } from "@/lib/event-detail";
 import { compactNumber } from "@/lib/utils";
 import { CategoryIcon } from "@/components/event/category-icon";
 import type { SportEvent } from "@/types";
@@ -76,6 +78,7 @@ export function TopEventsSection({ events, upcoming }: TopEventsSectionProps) {
                       </span>
                     }
                     accent={categoryColor(e.category)}
+                    detailHref={sportEventPagePath(e)}
                   />
                 </li>
               ))}
@@ -158,6 +161,7 @@ export function TopEventsSection({ events, upcoming }: TopEventsSectionProps) {
                         </Badge>
                       }
                       accent={categoryColor(e.category)}
+                      detailHref={sportEventPagePath(e)}
                     />
                   </li>
                 ))}
@@ -207,17 +211,19 @@ function RowItem({
   meta,
   right,
   accent,
+  detailHref,
 }: {
   rank: number;
   title: string;
   meta: React.ReactNode;
   right: React.ReactNode;
   accent?: string;
+  detailHref?: string;
 }) {
   return (
-    <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors">
+    <div className="flex items-start gap-3 p-2 rounded-xl hover:bg-white/[0.04] transition-colors">
       <div
-        className="relative h-8 w-8 rounded-lg grid place-items-center font-mono text-xs font-bold bg-white/5 border border-white/10 shrink-0"
+        className="relative h-8 w-8 rounded-lg grid place-items-center font-mono text-xs font-bold bg-white/5 border border-white/10 shrink-0 mt-0.5"
         style={accent ? { color: accent } : undefined}
       >
         {rank}
@@ -227,8 +233,16 @@ function RowItem({
         <div className="text-[11px] text-white/55">
           {meta}
         </div>
+        {detailHref ? (
+          <Link
+            href={detailHref}
+            className="mt-1 inline-flex text-[11px] font-semibold text-neon hover:text-neon-400 hover:underline underline-offset-2"
+          >
+            Детальніше
+          </Link>
+        ) : null}
       </div>
-      <div className="shrink-0">{right}</div>
+      <div className="shrink-0 pt-0.5">{right}</div>
     </div>
   );
 }

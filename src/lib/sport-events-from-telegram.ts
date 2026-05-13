@@ -15,6 +15,8 @@ import {
   TELEGRAM_CHANNEL,
   tryParseDate,
 } from "@/services/telegram/parser";
+import { sortDistanceTokensDesc, normalizeDistanceLine } from "@/lib/distance-sort";
+import { eventSlugFromTitle } from "@/lib/cyrillic-transliterate";
 
 const TARGET_EVENT_YEAR_PREFIX = "2026";
 
@@ -72,20 +74,8 @@ export function mentionsKilometers(text: string): boolean {
   return false;
 }
 
-/**
- * Короткий текст для картки: дистанції з афіші (км / km / K).
- */
-function extractDistanceSnippet(text: string): string | undefined {
-  const labelled =
-    /\bДистанц[іiї][^:\n]{0,20}:\s*([^\n]+)/iu.exec(text)?.[1]?.trim();
-  const fromLabel = labelled ? pickDistanceCandidatesFromSlice(labelled) : "";
-  const fromBody = pickDistanceCandidatesFromSlice(text);
-  const best = fromLabel.trim() || fromBody.trim();
-  return best ? best.slice(0, 140) : undefined;
-}
-
-/** Збирає збіги на кшталт «10 км», «1км», «21 K», «5 km». */
-function pickDistanceCandidatesFromSlice(src: string): string {
+/** Збирає збіги на кшталт «10 км», «1км», «21 K», «5 km» — унікальні, до 10. */
+function pickDistanceUniqueList(src: string): string[] {
   const patterns: RegExp[] = [
     /\d+[,.]?\d*\s*км(?:\.|,)?(?=[\s,;).\]!?…]|$)/giu,
     /\d+[,.]?\d*км\b/giu,
@@ -113,14 +103,48 @@ function pickDistanceCandidatesFromSlice(src: string): string {
     for (const m of src.matchAll(re)) pushFormatted(m[0]);
   }
 
-  if (unique.length > 0) return unique.slice(0, 10).join(", ");
+  if (unique.length > 0) return unique.slice(0, 10);
 
   const trailKm =
     /((?:\d+[,.]?\d*\s*[,+]?\s*)+\d+[,.]?\d*)\s*км\b/iu.exec(src);
-  if (trailKm?.[0])
-    return trailKm[0].replace(/\s+/g, " ").trim().slice(0, 140);
+  if (trailKm?.[0]) {
+    const t = trailKm[0].replace(/\s+/g, " ").trim().slice(0, 140);
+    return t ? [t] : [];
+  }
 
-  return "";
+  return [];
+}
+
+function mergeDistanceLists(lists: string[][]): string[] {
+  const seen = new Set<string>();
+  const merged: string[] = [];
+  for (const list of lists) {
+    for (const raw of list) {
+      let t = raw.replace(/\s+/g, " ").trim();
+      if (!t) continue;
+      const glued = /^(\d+[,.]?\d*)км\b$/iu.exec(t.replace(/\s/g, ""));
+      if (glued?.[1]) t = `${glued[1]} км`;
+      const dedupKey = t.toLowerCase().replace(",", ".").replace(/\s/g, "");
+      if (seen.has(dedupKey)) continue;
+      seen.add(dedupKey);
+      merged.push(t);
+    }
+  }
+  return merged;
+}
+
+/**
+ * Короткий текст для картки: усі дистанції з «Дистанція: …» та з повного тексту допису.
+ */
+function extractDistanceSnippet(text: string): string | undefined {
+  const labelled =
+    /\bДистанц[іiї][^:\n]{0,20}:\s*([^\n]+)/iu.exec(text)?.[1]?.trim();
+  const fromLabel = labelled ? pickDistanceUniqueList(labelled) : [];
+  const fromBody = pickDistanceUniqueList(text);
+  const merged = mergeDistanceLists([fromLabel, fromBody]);
+  if (merged.length === 0) return undefined;
+  const joined = sortDistanceTokensDesc(merged).slice(0, 10).join(" ");
+  return normalizeDistanceLine(joined) || undefined;
 }
 
 const KYIV_FALLBACK = getCityByName("Київ") ?? {
@@ -169,19 +193,6 @@ function alphaSlug(input: string): string {
     .replace(/^-+|-+$/g, "")
     .slice(0, 48);
   return s.length > 0 ? s : "org";
-}
-
-function slugFromTitle(title: string, postId: number): string {
-  const base = title
-    .normalize("NFKD")
-    .replace(/\p{M}/gu, "")
-    .toLowerCase()
-    .replace(/[^\p{L}\p{N}\s_-]+/gu, " ")
-    .trim()
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .slice(0, 96);
-  return `${base.length > 3 ? base : "event"}-${postId}`;
 }
 
 function eventDateState(eventIso: string): EventState {
@@ -286,7 +297,7 @@ export function telegramPostsToSportEvents(posts: TelegramPost[]): SportEvent[] 
 
     const category = inferEventCategory(bodyPlain);
 
-    /** Кнопки «Реєстрація» / «Результати» ведуть на сам допис каналу. */
+    /** Первинне посилання на афішу — сторінка аналітики; t.me лишається в CTA. */
     const registrationLink = `https://t.me/${raw.channelId}/${raw.postId}`;
 
     const hashtagRaw = bodyPlain.match(/#([^\s#]+)/g) ?? [];
@@ -302,10 +313,10 @@ export function telegramPostsToSportEvents(posts: TelegramPost[]): SportEvent[] 
     ).slice(0, 16);
 
     const organizerName =
-      parseOrganizerLine(bodyPlain)?.slice(0, 180) ?? TELEGRAM_CHANNEL.displayName;
+      parseOrganizerLine(bodyPlain) || TELEGRAM_CHANNEL.displayName;
     const organizerId = `tg-org-${alphaSlug(organizerName)}`;
 
-    const slug = slugFromTitle(title, raw.postId);
+    const slug = eventSlugFromTitle(title, raw.postId);
     const id = `evt-tg-${raw.postId}`;
     if (seenIds.has(raw.postId)) continue;
     seenIds.add(raw.postId);
@@ -337,6 +348,7 @@ export function telegramPostsToSportEvents(posts: TelegramPost[]): SportEvent[] 
       views: Number.isFinite(raw.views) ? raw.views : 0,
       tags,
       distance,
+      telegramPostDate: raw.date,
       featured: false,
       ...(imageAlternates.length ? { imageAlternates } : {}),
     });

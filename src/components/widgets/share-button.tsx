@@ -4,6 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, Facebook, Link2, Send, Share2, Twitter } from "lucide-react";
 import type { SportEvent } from "@/types";
+import { sportEventAbsoluteUrl, sportEventPagePath } from "@/lib/event-detail";
 
 interface ShareButtonProps {
   event: SportEvent;
@@ -12,10 +13,11 @@ interface ShareButtonProps {
 export function ShareButton({ event }: ShareButtonProps) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const path = sportEventPagePath(event);
   const shareUrl =
     typeof window !== "undefined"
-      ? `${window.location.origin}#event-${event.id}`
-      : `https://fartlek.events/event/${event.slug}`;
+      ? `${window.location.origin}${path}`
+      : sportEventAbsoluteUrl(event);
   const text = `${event.title} — ${event.city}, ${new Date(
     event.date,
   ).toDateString()}`;

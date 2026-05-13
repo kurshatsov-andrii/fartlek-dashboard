@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarClock,
@@ -82,9 +83,22 @@ function applyFilters(events: SportEvent[], f: EventFilters): SportEvent[] {
   });
 }
 
-export function EventsSection({ upcoming, finished }: EventsSectionProps) {
+function EventsSectionContent({ upcoming, finished }: EventsSectionProps) {
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState<EventFilters>(defaultFilters);
   const [tab, setTab] = useState<"upcoming" | "finished">("upcoming");
+
+  const cityParam = searchParams.get("city");
+  useEffect(() => {
+    if (!cityParam) return;
+    let name: string;
+    try {
+      name = decodeURIComponent(cityParam);
+    } catch {
+      name = cityParam;
+    }
+    setFilters((f) => ({ ...f, city: name }));
+  }, [cityParam]);
 
   const filteredUpcoming = useMemo(
     () => applyFilters(upcoming, filters),
@@ -243,6 +257,18 @@ export function EventsSection({ upcoming, finished }: EventsSectionProps) {
         </div>
       </div>
     </section>
+  );
+}
+
+export function EventsSection(props: EventsSectionProps) {
+  return (
+    <Suspense
+      fallback={
+        <section id="events" className="relative py-16 md:py-20 min-h-[24rem]" />
+      }
+    >
+      <EventsSectionContent {...props} />
+    </Suspense>
   );
 }
 

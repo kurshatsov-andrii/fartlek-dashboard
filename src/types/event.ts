@@ -42,6 +42,8 @@ export interface SportEvent {
   image: string;
   /** Інші CDN-URL з допису якщо основне превʼю не підвантажилось */
   imageAlternates?: string[];
+  /** ISO час публікації допису в каналі (не дата заходу на афіші). */
+  telegramPostDate?: string;
   date: string; // ISO date
   endDate?: string;
   city: string;
@@ -61,7 +63,8 @@ export interface SportEvent {
   likes: number;
   views: number;
   tags: string[];
-  distance?: string; // e.g. "42.2K", "21K"
+  /** Усі знайдені дистанції з допису, через кому (Telegram / БД). */
+  distance?: string;
   price?: number;
   featured?: boolean;
   weather?: {

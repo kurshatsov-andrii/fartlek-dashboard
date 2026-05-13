@@ -1,17 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { CalendarDays, Eye, Heart, MapPin, Ruler } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useFavorites } from "@/components/providers/favorites-provider";
 import { categoryLabel } from "@/lib/analytics";
 import { formatEventDate, fromNow } from "@/lib/date";
+import { sortDistancesDisplayLine } from "@/lib/distance-sort";
+import { organizerLatinInitials } from "@/lib/organizer-initials";
 import { compactNumber } from "@/lib/utils";
 import { StatusBadge } from "./status-badge";
 import { CategoryIcon } from "./category-icon";
 import type { SportEvent } from "@/types";
 import { ShareButton } from "@/components/widgets/share-button";
 import { EventCoverImage } from "./event-cover-image";
+import { sportEventPagePath } from "@/lib/event-detail";
 
 interface EventCardProps {
   event: SportEvent;
@@ -20,6 +24,7 @@ interface EventCardProps {
 export function EventCard({ event }: EventCardProps) {
   const { isFavorite, toggle } = useFavorites();
   const fav = isFavorite(event.id);
+  const distanceLine = sortDistancesDisplayLine(event.distance ?? "");
 
   return (
     <article className="group relative h-full glass rounded-2xl overflow-hidden hover:border-neon/40 hover:-translate-y-1 hover:shadow-glass transition-all duration-300 flex flex-col">
@@ -82,34 +87,29 @@ export function EventCard({ event }: EventCardProps) {
           </span>
         </div>
 
-        <div className="mt-4 grid grid-cols-2 gap-2 text-xs">
-          <div className="flex items-center gap-1.5 text-white/65 min-w-0">
-            <Ruler className="h-3.5 w-3.5 shrink-0 text-cyber-blue" />
-            <span
-              className="font-mono truncate min-w-0"
-              title={event.distance?.trim() || undefined}
-            >
-              {event.distance?.trim() ? event.distance.trim() : "—"}
-            </span>
-            <span className="text-white/40 shrink-0">дист.</span>
-          </div>
+        <div className="mt-4 flex flex-col gap-2 text-xs">
           <div className="flex items-center gap-1.5 text-white/65">
-            <Eye className="h-3.5 w-3.5 text-cyber-purple" />
+            <Eye className="h-3.5 w-3.5 shrink-0 text-cyber-purple" />
             <span className="font-mono">{compactNumber(event.views)}</span>
             <span className="text-white/40">перегл.</span>
+          </div>
+          <div className="flex items-start gap-1.5 text-white/65 min-w-0">
+            <Ruler className="h-3.5 w-3.5 shrink-0 text-cyber-blue mt-0.5" />
+            <span
+              className="font-mono min-w-0 break-words leading-snug"
+              title={distanceLine || undefined}
+            >
+              {distanceLine || "—"}
+            </span>
           </div>
         </div>
         <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             <span className="h-7 w-7 rounded-full bg-gradient-to-br from-neon to-cyber-blue grid place-items-center text-[10px] font-bold text-ink-950 shrink-0">
-              {event.organizerName
-                .split(" ")
-                .map((s) => s[0])
-                .slice(0, 2)
-                .join("")}
+              {organizerLatinInitials(event.organizerName)}
             </span>
             <div className="min-w-0">
-              <div className="text-xs font-medium truncate">
+              <div className="text-xs font-medium break-words leading-snug">
                 {event.organizerName}
               </div>
               <div
@@ -121,25 +121,12 @@ export function EventCard({ event }: EventCardProps) {
             </div>
           </div>
 
-          {event.state === "upcoming" ? (
-            <a
-              href={event.registrationLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-neon/15 border border-neon/30 text-neon text-xs font-semibold hover:bg-neon hover:text-ink-950 transition-colors shrink-0"
-            >
-              Реєстрація
-            </a>
-          ) : (
-            <a
-              href={event.registrationLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-cyber-purple/15 border border-cyber-purple/35 text-cyber-purple text-xs font-semibold hover:bg-cyber-purple hover:text-ink-950 transition-colors shrink-0"
-            >
-              Результати
-            </a>
-          )}
+          <Link
+            href={sportEventPagePath(event)}
+            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-neon/15 border border-neon/30 text-neon text-xs font-semibold hover:bg-neon hover:text-ink-950 transition-colors shrink-0"
+          >
+            Детальніше
+          </Link>
         </div>
       </div>
     </article>
