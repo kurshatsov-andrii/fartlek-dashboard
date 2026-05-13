@@ -10,7 +10,9 @@
     "start": "next start",
     "lint": "next lint",
     "sync:supabase": "tsx --tsconfig tsconfig.json scripts/populate-supabase-from-telegram.ts",
-    "sync:supabase:reset2026": "tsx --tsconfig tsconfig.json scripts/resync-supabase-2026-events.ts"
+    "sync:supabase:reset2026": "tsx --tsconfig tsconfig.json scripts/resync-supabase-2026-events.ts",
+    "warm:event-images": "tsx --tsconfig tsconfig.json scripts/warm-event-images.ts",
+    "refresh:post-images": "tsx --tsconfig tsconfig.json scripts/refresh-telegram-post-images-from-html.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",

@@ -16,6 +16,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import type { TooltipProps } from "recharts";
 import { SectionHeader } from "./stats-section";
 import {
   categoriesDistribution,
@@ -39,10 +40,118 @@ const tooltipStyle = {
   boxShadow: "0 8px 32px rgba(0,0,0,0.55)",
 };
 
+function CategoryBarTooltip({ active, payload }: TooltipProps<number, string>) {
+  if (!active || !payload?.length) return null;
+  const row = payload[0].payload as { label: string; count: number };
+  return (
+    <div style={tooltipStyle}>
+      <div style={{ fontWeight: 600, marginBottom: 6, color: "#ffffff" }}>
+        {row.label}
+      </div>
+      <div style={{ color: "rgba(255,255,255,0.92)" }}>
+        Подій:{" "}
+        <span
+          style={{
+            fontVariantNumeric: "tabular-nums",
+            fontWeight: 600,
+            color: "#ffffff",
+          }}
+        >
+          {row.count}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+const RADIAN = Math.PI / 180;
+
+function statusPiePercentLabel(props: {
+  cx: number;
+  cy: number;
+  midAngle?: number;
+  innerRadius?: number;
+  outerRadius?: number;
+  percent?: number;
+}) {
+  const { cx, cy, midAngle, innerRadius, outerRadius, percent } = props;
+  if (
+    midAngle == null ||
+    innerRadius == null ||
+    outerRadius == null ||
+    percent == null
+  ) {
+    return null;
+  }
+  if (percent < 0.04) return null;
+  const ir = Number(innerRadius);
+  const or = Number(outerRadius);
+  const radius = ir + (or - ir) * 0.55;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="#ffffff"
+      textAnchor="middle"
+      dominantBaseline="central"
+      style={{ fontSize: 13, fontWeight: 600 }}
+    >
+      {`${Math.round(percent * 100)}%`}
+    </text>
+  );
+}
+
+function StatusPieTooltip({
+  active,
+  payload,
+  total,
+}: Pick<TooltipProps<number, string>, "active" | "payload"> & {
+  total: number;
+}) {
+  if (!active || !payload?.length) return null;
+  const item = payload[0];
+  const value = Number(item.value);
+  const name =
+    typeof item.name === "string" ? item.name : String(item.name ?? "");
+  const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+  return (
+    <div style={tooltipStyle}>
+      <div style={{ fontWeight: 600, marginBottom: 6, color: "#ffffff" }}>
+        {name}
+      </div>
+      <div style={{ color: "rgba(255,255,255,0.92)" }}>
+        Подій:{" "}
+        <span
+          style={{
+            fontVariantNumeric: "tabular-nums",
+            fontWeight: 600,
+            color: "#ffffff",
+          }}
+        >
+          {value}
+        </span>
+      </div>
+      <div
+        style={{
+          marginTop: 6,
+          color: "#ffffff",
+          fontWeight: 600,
+          fontVariantNumeric: "tabular-nums",
+        }}
+      >
+        {pct}% від усіх
+      </div>
+    </div>
+  );
+}
+
 export function ChartsSection({ events }: ChartsSectionProps) {
   const monthly = eventsPerMonth(events);
   const categories = categoriesDistribution(events);
   const vs = upcomingVsFinished(events);
+  const pieStatusTotal = vs.reduce((s, d) => s + d.value, 0);
 
   return (
     <section className="relative py-16 md:py-20">
@@ -197,8 +306,9 @@ export function ChartsSection({ events }: ChartsSectionProps) {
                   width={80}
                 />
                 <Tooltip
-                  contentStyle={tooltipStyle}
+                  content={CategoryBarTooltip}
                   cursor={{ fill: "rgba(255,102,51,0.08)" }}
+                  wrapperStyle={{ outline: "none" }}
                 />
                 <Bar
                   dataKey="count"
@@ -241,6 +351,8 @@ export function ChartsSection({ events }: ChartsSectionProps) {
                   cornerRadius={6}
                   animationDuration={1200}
                   strokeWidth={0}
+                  labelLine={false}
+                  label={statusPiePercentLabel}
                 >
                   {vs.map((entry, idx) => (
                     <Cell
@@ -249,14 +361,40 @@ export function ChartsSection({ events }: ChartsSectionProps) {
                     />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={tooltipStyle} />
+                <Tooltip
+                  content={({ active, payload }) => (
+                    <StatusPieTooltip
+                      active={active}
+                      payload={
+                        payload as TooltipProps<number, string>["payload"]
+                      }
+                      total={pieStatusTotal}
+                    />
+                  )}
+                  wrapperStyle={{ outline: "none" }}
+                />
                 <Legend
                   verticalAlign="bottom"
                   height={36}
                   iconType="circle"
-                  formatter={(v) => (
-                    <span className="text-white/70 text-xs">{v}</span>
-                  )}
+                  formatter={(name, _entry, index) => {
+                    const slice = vs[index];
+                    const pct =
+                      pieStatusTotal > 0 && slice
+                        ? Math.round((slice.value / pieStatusTotal) * 100)
+                        : 0;
+                    return (
+                      <span className="text-xs text-white">
+                        {name}
+                        <span
+                          className="ml-1.5 font-semibold tabular-nums text-white"
+                          style={{ fontWeight: 600 }}
+                        >
+                          {pct}%
+                        </span>
+                      </span>
+                    );
+                  }}
                 />
               </PieChart>
             </ResponsiveContainer>

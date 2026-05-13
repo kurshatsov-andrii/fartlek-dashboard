@@ -40,3 +40,6 @@ next-env.d.ts
 
 # local scratch (telegram scraping intermediates)
 /.tmp/
+
+# proxied Telegram images (local /tmp on Vercel)
+/.cache/

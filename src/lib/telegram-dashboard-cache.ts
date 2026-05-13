@@ -81,3 +81,8 @@ const cachedDashboard = unstable_cache(
 export async function fetchTelegramDashboard() {
   return cachedDashboard();
 }
+
+/** Без Data Cache Next — для CLI-скриптів і прогріву зображень. */
+export async function loadTelegramDashboardDirect() {
+  return assembleDashboard();
+}

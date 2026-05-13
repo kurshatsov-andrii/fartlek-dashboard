@@ -67,10 +67,16 @@ async function sendQuickSubmitTelegramMessage(
       },
     );
 
-    const tgJson = (await tgRes.json()) as {
-      ok?: boolean;
-      description?: string;
-    };
+    let tgJson: { ok?: boolean; description?: string } = {};
+    try {
+      const txt = await tgRes.text();
+      if (txt.trim()) tgJson = JSON.parse(txt) as typeof tgJson;
+    } catch {
+      if (!tgRes.ok) {
+        errors.push(`${chatRecipient}: ${tgRes.statusText}`);
+      }
+      continue;
+    }
 
     if (!tgRes.ok || tgJson.ok === false) {
       errors.push(
@@ -174,7 +180,7 @@ export async function POST(req: NextRequest) {
     `<b>Реєстрація:</b> <a href="${regEscaped}">${regEscaped}</a>`,
     "",
     `<b>Опис:</b>`,
-    escapeHtml(description).replace(/\n/g, "<br>"),
+    escapeHtml(description),
   ].join("\n");
 
   if (html.length > 4090) {
@@ -217,4 +223,5 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ ok: true });}
+  return NextResponse.json({ ok: true });
+}

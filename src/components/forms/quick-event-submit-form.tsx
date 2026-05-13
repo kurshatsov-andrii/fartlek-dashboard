@@ -37,7 +37,8 @@ export function QuickEventSubmitForm() {
         className="space-y-2"
         onSubmit={async (e) => {
           e.preventDefault();
-          const fd = new FormData(e.currentTarget);
+          const formEl = e.currentTarget;
+          const fd = new FormData(formEl);
           const title = String(fd.get("title") ?? "").trim();
           const city = String(fd.get("city") ?? "").trim();
           const date = String(fd.get("date") ?? "").trim();
@@ -71,7 +72,10 @@ export function QuickEventSubmitForm() {
           try {
             const res = await fetch("/api/submit-quick-event", {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
               body: JSON.stringify({
                 title,
                 city,
@@ -82,27 +86,43 @@ export function QuickEventSubmitForm() {
               }),
             });
 
-            const data = (await res.json()) as {
-              ok?: boolean;
-              error?: string;
-            };
-
-            if (!res.ok || data.ok === false) {
-              setStatus("err");
-              setFeedback(data.error ?? "Не вдалося надіслати.");
-              return;
+            const rawText = await res.text();
+            let data: { ok?: boolean; error?: string } = {};
+            if (rawText.trim()) {
+              try {
+                data = JSON.parse(rawText) as typeof data;
+              } catch {
+                /* проксі/шлюз інколи віддають не-JSON — обробляємо за HTTP-статусом */
+              }
             }
 
-            setStatus("ok");
-            setFeedback(
-              "Запит надіслано в Telegram ✓ Незабаром підтвердимо подію.",
-            );
-            e.currentTarget.reset();
-            setPhone("+380");
+            const serverSaysFail = data.ok === false;
+            if (!res.ok || serverSaysFail) {
+              setStatus("err");
+              setFeedback(
+                data.error ??
+                  (res.ok && serverSaysFail
+                    ? "Не вдалося надіслати."
+                    : `Помилка сервера (${res.status}). Спробуйте ще раз.`),
+              );
+              return;
+            }
           } catch {
             setStatus("err");
-            setFeedback("Помилка мережі. Спробуйте ще раз.");
+            setFeedback(
+              "Не вдалося отримати відповідь сервера. Якщо повідомлення вже є в Telegram — все добре; інакше спробуйте ще раз.",
+            );
+            return;
           }
+
+          setStatus("ok");
+          setFeedback("Подія успішно відправлена");
+          try {
+            formEl.reset();
+          } catch {
+            /* після await e.currentTarget може бути недійсний — скидання не критичне */
+          }
+          setPhone("+380");
         }}
       >
         <Input name="title" placeholder="Назва події *" required />
@@ -161,7 +181,7 @@ export function QuickEventSubmitForm() {
         {(status === "ok" || status === "err") && feedback && (
           <p
             className={`text-[11px] text-center mt-2 ${
-              status === "ok" ? "text-neon/90" : "text-amber-400"
+              status === "ok" ? "text-emerald-400" : "text-amber-400"
             }`}
           >
             {feedback}

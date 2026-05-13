@@ -152,6 +152,74 @@ export function extractImageUrlsFromPlainText(text: string): string[] {
 }
 
 /**
+ * CDN Telegram / Telegraph із збереженого HTML допису (t.me превʼю), коли в `images`
+ * у БД лишились старі або порожні URL — те саме покриття, що в html-preview-parser.
+ */
+export function extractTelegramCdnUrlsFromHtml(html: string): string[] {
+  if (!html?.trim()) return [];
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const push = (raw: string) => {
+    const t = raw.trim();
+    if (!t) return;
+    const patched = t.replace(/^\/\//, "https:");
+    const n =
+      normalizeTelegramAssetUrl(patched) ??
+      (patched.startsWith("http") ? patched : null);
+    if (!n || seen.has(n)) return;
+    if (!acceptsParserExtractedMediaUrl(n)) return;
+    seen.add(n);
+    out.push(n);
+  };
+
+  for (const mm of html.matchAll(
+    /background-image:\s*url\(\s*['"]?([^'")]+?)['"]?\s*\)/gi,
+  )) {
+    push(mm[1]);
+  }
+  for (const mm of html.matchAll(
+    /(?:data-src|data-original|src)\s*=\s*["']([^"']+)["']/gi,
+  )) {
+    const v = mm[1].trim();
+    if (/cdn\d*\.telesco\.pe/i.test(v)) push(v.replace(/^\/\//, "https:"));
+    if (/cdn\d*\.cdn-telegram\.org/i.test(v))
+      push(v.replace(/^\/\//, "https:"));
+    if (v.includes("telegraph.controller.bot") && /\/file\//i.test(v))
+      push(v.startsWith("//") ? `https:${v}` : v);
+  }
+  for (const mm of html.matchAll(/(?:href|src)=["']([^"']+)["']/g)) {
+    const v = mm[1];
+    if (/cdn\d*\.telesco\.pe/i.test(v)) push(v.replace(/^\/\//, "https:"));
+    if (/cdn\d*\.cdn-telegram\.org/i.test(v))
+      push(v.replace(/^\/\//, "https:"));
+    if (v.includes("telegraph.controller.bot"))
+      push(v.startsWith("//") ? `https:${v}` : v);
+  }
+  for (const mm of html.matchAll(
+    /https?:\/\/cdn\d*\.cdn-telegram\.org\/[^\s"'>)]+/gi,
+  )) {
+    push(mm[0]);
+  }
+  for (const mm of html.matchAll(
+    /https?:\/\/cdn\d+\.telesco\.pe\/[^\s"'>)]+/gi,
+  )) {
+    push(mm[0]);
+  }
+  for (const mm of html.matchAll(
+    /https?:\/\/telegraph\.controller\.bot[^\s"'>)]+/gi,
+  )) {
+    push(mm[0]);
+  }
+  for (const mm of html.matchAll(/\bsrc[Ss]et\s*=\s*["']([^"']+)["']/gi)) {
+    for (const part of mm[1].split(",")) {
+      const u = part.trim().replace(/\s+\d+[.]\d+x$/i, "").trim();
+      if (u.startsWith("http")) push(u);
+    }
+  }
+  return out;
+}
+
+/**
  * Telegraph file-посилання в будь-якій частині HTML фрагмента допису
  * (прев’ю-посилання, lazy attr).
  */
@@ -186,7 +254,10 @@ export function mergeTelegramPostImageSources(
   fullMessageHtml: string,
   plainText: string,
 ): string[] {
-  const sweep = extractTelegraphFileUrlsFromHtml(fullMessageHtml);
+  const sweep = [
+    ...extractTelegraphFileUrlsFromHtml(fullMessageHtml),
+    ...extractTelegramCdnUrlsFromHtml(fullMessageHtml),
+  ];
   const fromText = extractImageUrlsFromPlainText(plainText);
   const seen = new Set<string>();
   const merged: string[] = [];
@@ -206,29 +277,23 @@ export function mergeTelegramPostImageSources(
 
 /** Повний список кандидатів для запису чи відображення. */
 export function expandTelegramPostImages(post: TelegramPost): string[] {
-  const seen = new Set<string>();
-  const out: string[] = [];
-  const add = (raw: string) => {
-    const n = normalizeTelegramAssetUrl(raw.trim());
-    if (!n || seen.has(n)) return;
-    if (!acceptsParserExtractedMediaUrl(n)) return;
+  const merged = mergeTelegramPostImageSources(
+    post.images,
+    post.rawHtml ?? "",
+    post.text,
+  );
+  const seen = new Set(merged);
+  const withLinks = [...merged];
+  for (const l of post.links ?? []) {
+    const n =
+      normalizeTelegramAssetUrl(l.trim()) ??
+      (l.trim().startsWith("http") ? l.trim() : null);
+    if (!n || seen.has(n)) continue;
+    if (!acceptsParserExtractedMediaUrl(n)) continue;
     seen.add(n);
-    out.push(n);
-  };
-  for (const u of post.images) add(u);
-  for (const l of post.links ?? []) add(l);
-  if (post.rawHtml?.trim()) {
-    for (const u of extractTelegraphFileUrlsFromHtml(post.rawHtml))
-      add(u);
+    withLinks.push(n);
   }
-  TG_TEXT_URL_REGEX.lastIndex = 0;
-  for (const u of extractImageUrlsFromPlainText(post.text)) {
-    if (!seen.has(u)) {
-      seen.add(u);
-      out.push(u);
-    }
-  }
-  return finalizePosterImageUrls(out);
+  return finalizePosterImageUrls(withLinks);
 }
 
 /** Упорядковані кандидати обкладинки (основний + запасні для картки при помилці завантаження). */

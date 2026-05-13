@@ -7,8 +7,8 @@ import {
   CalendarClock,
   CalendarDays,
   Coins,
+  Heart,
   MapPin,
-  Route,
   TrendingUp,
 } from "lucide-react";
 import { AnimatedCounter } from "@/components/widgets/animated-counter";
@@ -69,11 +69,12 @@ export function StatsSection({ stats }: StatsSectionProps) {
       iconColor: "text-cyber-orange",
     },
     {
-      label: "З дистанцією в афіші",
-      value: stats.eventsWithDistance,
-      icon: Route,
+      label: "Вподобання",
+      value: stats.totalLikes,
+      icon: Heart,
       accent: "from-emerald-400/30 to-transparent",
       iconColor: "text-emerald-400",
+      format: (n: number) => compactNumber(n),
     },
     {
       label: "Перегляди",

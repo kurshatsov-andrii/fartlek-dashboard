@@ -160,3 +160,15 @@ export async function upsertTelegramPosts(
   }
   return posts.length;
 }
+
+export async function updateTelegramPostImages(
+  postId: number,
+  images: string[],
+): Promise<void> {
+  const supabase = getSupabaseAdmin();
+  const { error } = await supabase
+    .from(TABLE)
+    .update({ images })
+    .eq("post_id", postId);
+  if (error) throw error;
+}

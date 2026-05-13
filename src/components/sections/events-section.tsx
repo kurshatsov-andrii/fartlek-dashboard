@@ -88,6 +88,24 @@ function EventsSectionContent({ upcoming, finished }: EventsSectionProps) {
   const [filters, setFilters] = useState<EventFilters>(defaultFilters);
   const [tab, setTab] = useState<"upcoming" | "finished">("upcoming");
 
+  const filtersResetKey = useMemo(
+    () =>
+      [
+        filters.city ?? "",
+        filters.category ?? "",
+        filters.month ?? "",
+        filters.status ?? "",
+        filters.search,
+      ].join("|"),
+    [
+      filters.city,
+      filters.category,
+      filters.month,
+      filters.status,
+      filters.search,
+    ],
+  );
+
   const cityParam = searchParams.get("city");
   useEffect(() => {
     if (!cityParam) return;
@@ -247,11 +265,17 @@ function EventsSectionContent({ upcoming, finished }: EventsSectionProps) {
             </div>
 
             <TabsContent value="upcoming" className="mt-6">
-              <EventGrid events={filteredUpcoming} />
+              <EventGrid
+                events={filteredUpcoming}
+                resetKey={filtersResetKey}
+              />
             </TabsContent>
 
             <TabsContent value="finished" className="mt-6">
-              <EventGrid events={filteredFinished} />
+              <EventGrid
+                events={filteredFinished}
+                resetKey={filtersResetKey}
+              />
             </TabsContent>
           </Tabs>
         </div>
@@ -272,7 +296,21 @@ export function EventsSection(props: EventsSectionProps) {
   );
 }
 
-function EventGrid({ events }: { events: SportEvent[] }) {
+const EVENTS_PAGE_SIZE = 12;
+
+function EventGrid({
+  events,
+  resetKey,
+}: {
+  events: SportEvent[];
+  resetKey: string;
+}) {
+  const [visible, setVisible] = useState(EVENTS_PAGE_SIZE);
+
+  useEffect(() => {
+    setVisible(EVENTS_PAGE_SIZE);
+  }, [resetKey]);
+
   if (events.length === 0) {
     return (
       <div className="glass rounded-2xl p-12 text-center">
@@ -286,23 +324,52 @@ function EventGrid({ events }: { events: SportEvent[] }) {
       </div>
     );
   }
+
+  const shown = events.slice(0, visible);
+  const hasMore = visible < events.length;
+
   return (
-    <motion.div
-      layout
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
-    >
-      {events.map((e, idx) => (
-        <motion.div
-          key={e.id}
-          layout
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-5% 0px" }}
-          transition={{ duration: 0.35, delay: Math.min(idx * 0.03, 0.3) }}
-        >
-          <EventCard event={e} />
-        </motion.div>
-      ))}
-    </motion.div>
+    <>
+      <motion.div
+        layout
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"
+      >
+        {shown.map((e, idx) => (
+          <motion.div
+            key={e.id}
+            layout
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-5% 0px" }}
+            transition={{ duration: 0.35, delay: Math.min(idx * 0.03, 0.3) }}
+          >
+            <EventCard event={e} />
+          </motion.div>
+        ))}
+      </motion.div>
+      {hasMore ? (
+        <div className="mt-10 flex flex-col items-center gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="min-w-[220px] rounded-full border-white/15 bg-white/5 hover:bg-white/10"
+            onClick={() =>
+              setVisible((v) =>
+                Math.min(v + EVENTS_PAGE_SIZE, events.length),
+              )
+            }
+          >
+            Завантажити події ще
+          </Button>
+          <p className="text-[11px] text-white/45">
+            Показано {shown.length} з {events.length}
+          </p>
+        </div>
+      ) : events.length > EVENTS_PAGE_SIZE ? (
+        <p className="mt-8 text-center text-[11px] text-white/45">
+          Усі події завантажено ({events.length})
+        </p>
+      ) : null}
+    </>
   );
 }

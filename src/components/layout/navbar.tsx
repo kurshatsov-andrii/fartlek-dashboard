@@ -1,6 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Flame,
@@ -23,10 +25,44 @@ const NAV_LINKS = [
   { href: "#admin", label: "Адмін" },
 ];
 
+/** На головній залишаємось на / і скролимо; з /event/… тощо — перехід на головну з якорем */
+function homeHashLink(hash: string) {
+  return hash.startsWith("#") ? `/${hash}` : hash;
+}
+
 export function Navbar() {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { count } = useFavorites();
+
+  const scrollToHomeSection = (hashWithHash: string) => {
+    if (pathname !== "/") return false;
+    const id = hashWithHash.replace(/^#/, "");
+    const el = document.getElementById(id);
+    if (!el) return false;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    return true;
+  };
+
+  const sectionLinkClick = (hash: string) => (e: React.MouseEvent) => {
+    if (scrollToHomeSection(hash)) e.preventDefault();
+    setMobileOpen(false);
+  };
+
+  const goToSearch = () => {
+    if (scrollToHomeSection("#search")) {
+      setMobileOpen(false);
+      return;
+    }
+    setMobileOpen(false);
+    window.location.assign("/#search");
+  };
+
+  const goToAdmin = () => {
+    if (scrollToHomeSection("#admin")) return;
+    window.location.assign("/#admin");
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 12);
@@ -34,12 +70,6 @@ export function Navbar() {
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
-
-  const scrollToSearch = () => {
-    const el = document.getElementById("search");
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-    setMobileOpen(false);
-  };
 
   return (
     <motion.header
@@ -60,7 +90,7 @@ export function Navbar() {
               : "bg-transparent",
           )}
         >
-          <a href="#" className="flex items-center gap-2.5 group">
+          <Link href="/" className="flex items-center gap-2.5 group">
             <span className="relative grid place-items-center h-9 w-9 rounded-full bg-neon text-ink-950 shadow-neon-sm transition-transform group-hover:scale-110">
               <Flame className="h-5 w-5" strokeWidth={2.5} />
               <span className="absolute -inset-0.5 rounded-full bg-neon opacity-40 blur-md -z-10" />
@@ -71,24 +101,25 @@ export function Navbar() {
                 Події 2026
               </div>
             </div>
-          </a>
+          </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
             {NAV_LINKS.map((l) => (
-              <a
+              <Link
                 key={l.href}
-                href={l.href}
+                href={homeHashLink(l.href)}
+                onClick={sectionLinkClick(l.href)}
                 className="px-3 py-1.5 rounded-full text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
               >
                 {l.label}
-              </a>
+              </Link>
             ))}
           </nav>
 
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={scrollToSearch}
+              onClick={goToSearch}
               className="hidden md:inline-flex items-center gap-2 h-9 px-3.5 rounded-full bg-white/5 border border-white/10 text-sm text-white/60 hover:text-white hover:bg-white/10 transition-colors"
               aria-label="Пошук подій"
             >
@@ -99,8 +130,9 @@ export function Navbar() {
               </kbd>
             </button>
 
-            <a
-              href="#favorites"
+            <Link
+              href="/#favorites"
+              onClick={sectionLinkClick("#favorites")}
               className="relative hidden sm:inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors"
               aria-label="Обране"
             >
@@ -110,16 +142,12 @@ export function Navbar() {
                   {count}
                 </span>
               )}
-            </a>
+            </Link>
 
             <Button
               size="sm"
               className="hidden md:inline-flex"
-              onClick={() => {
-                document
-                  .getElementById("admin")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }}
+              onClick={goToAdmin}
             >
               <Plus className="h-4 w-4" />
               Додати подію
@@ -150,14 +178,14 @@ export function Navbar() {
               className="lg:hidden mt-2 glass-strong rounded-2xl p-3 flex flex-col gap-1"
             >
               {NAV_LINKS.map((l) => (
-                <a
+                <Link
                   key={l.href}
-                  href={l.href}
-                  onClick={() => setMobileOpen(false)}
+                  href={homeHashLink(l.href)}
+                  onClick={sectionLinkClick(l.href)}
                   className="px-4 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5"
                 >
                   {l.label}
-                </a>
+                </Link>
               ))}
             </motion.nav>
           )}
