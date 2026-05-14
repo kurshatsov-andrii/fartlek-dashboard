@@ -1,7 +1,10 @@
 import { unstable_cache } from "next/cache";
 import type { ImportLogEntry, Organizer, SportEvent } from "@/types";
 import { organizersFromSportEvents } from "@/lib/organizers-from-events";
-import { telegramPostsToSportEvents } from "@/lib/sport-events-from-telegram";
+import {
+  dashboardTargetYearPrefixes,
+  telegramPostsToSportEvents,
+} from "@/lib/sport-events-from-telegram";
 import { fetchChannelPosts } from "@/services/telegram";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import {
@@ -47,10 +50,11 @@ async function assembleDashboard(): Promise<{
   const organizers = organizersFromSportEvents(events);
   const syncedAt =
     (await getLatestTelegramSyncTimeFromDb()) ?? new Date().toISOString();
+  const targetYearsLabel = dashboardTargetYearPrefixes().join(", ");
   const modeMsg =
     posts.length === 0
       ? "Таблиця порожня — викличте POST /api/sync-telegram або npm run sync:supabase:reset2026."
-      : `Зчитано ${posts.length} дописів з Supabase; на дашборді подій 2026 з дистанцією: ${events.length}.`;
+      : `Зчитано ${posts.length} дописів з Supabase; на дашборді подій (роки ISO: ${targetYearsLabel}) із дистанцією км: ${events.length}.`;
 
   const logs: ImportLogEntry[] = [
     {

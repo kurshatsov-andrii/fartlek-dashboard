@@ -18,36 +18,136 @@ import {
 import { sortDistanceTokensDesc, normalizeDistanceLine } from "@/lib/distance-sort";
 import { eventSlugFromTitle } from "@/lib/cyrillic-transliterate";
 
-const TARGET_EVENT_YEAR_PREFIX = "2026";
+/** Роки відбору дописів: `2026` за замовчуванням або `DASHBOARD_TELEGRAM_TARGET_YEAR_PREFIXES=2026,2027`. */
+export function dashboardTargetYearPrefixes(): string[] {
+  const raw = process.env.DASHBOARD_TELEGRAM_TARGET_YEAR_PREFIXES?.trim();
+  if (!raw)
+    return ["2026"];
+  const parts = raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  return parts.length > 0 ? parts : ["2026"];
+}
+
+function isoMatchesTargetYears(eventIso: string): boolean {
+  /** Використовуйте лише префікси року типу «2026» / «2027». */
+  return dashboardTargetYearPrefixes().some((p) => eventIso.startsWith(p));
+}
 
 /**
  * У дописі явно є мітка дати (як у афішах каналу): рядок «Дата:» / «Date:» тощо.
+ * «Дата проведення:» також буває (інакше вимога «\:» не збігається після лише слова «Дата»).
  */
 const EXPLICIT_EVENT_DATE_MARKER =
-  /^\s*(?:📅\s*)?(?:[Дд]ата(?:\s+(?:старту|забігу|заходу|події|івенту))?|Date)\s*[:\uFF1A\u2014\u2013\-–]\s*\S/im;
+  /^\s*(?:📅\s*)?(?:[Дд]ата(?:\s+(?:старту|забігу|заходу|події|івенту|проведення))?|Date)\s*[:\uFF1A\u2014\u2013\-–]\s*\S/im;
+
+/** Ті самі мітки, що й блок «Коли:» тощо, але в будь‑якій позиції (t.me часто складає афішу з кількох речень в одному рядку). */
+const ALT_DATE_LABEL_INLINE =
+  /\b(?:Коли|Період(?:\s+проведення)?|Термін|Дати(?:\s+проведення)?|When|Dates?)\s*[:\uFF1A\u2014\u2013\-–]\s*\S/i;
+
+/**
+ * Діапазон типу «05.06.2026 - 07.06.2026» — будь‑де в тексті (не лише початок рядка):
+ * без цього фільтр відсікує дописи, де перший рядок — лише заголовок.
+ */
+const INLINE_EVENT_DATE_RANGE =
+  /\d{1,2}[.\-/]\d{1,2}[.\-/]\d{4}\s*[\u2013\u2014-]\s*\d{1,2}[.\-/]\d{1,2}[.\-/]\d{4}\b/;
+
+/** «Дата: …» / «Date: …» також посередині рядка. */
+const EXPLICIT_DATE_LABEL_INLINE =
+  /\b(?:[Дд]ата(?:\s+(?:старту|забігу|заходу|події|івенту|проведення))?|Date)\s*[:\uFF1A\u2014\u2013\-–]\s*\S/i;
+
+/** Рядок лише з підписом «Дата …» без значення тієї самої строк — далі дата окремим рядком. */
+const LABEL_ONLY_DATE_HEADER_LINE =
+  /^\s*(?:📅\s*)?(?:[Дд]ата(?:\s+(?:старту|забігу|заходу|події|івенту|проведення))?|Date)\s*:?\s*$/i;
+
+const LABEL_ONLY_CALENDAR_LINE = /^\s*📅\s*:?\s*$/i;
+
+function lineHasParsableDate(lineRaw: string): boolean {
+  const line = lineRaw.trim();
+  if (!line) return false;
+  return tryParseDate(line) !== null;
+}
+
+function hasExplicitEventDateScheduling(bodyPlain: string): boolean {
+  if (EXPLICIT_EVENT_DATE_MARKER.test(bodyPlain)) return true;
+  if (EXPLICIT_DATE_LABEL_INLINE.test(bodyPlain)) return true;
+  if (ALT_DATE_LABEL_INLINE.test(bodyPlain)) return true;
+  if (INLINE_EVENT_DATE_RANGE.test(bodyPlain)) return true;
+
+  const lines = bodyPlain.split(/\r?\n/);
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i] ?? "";
+
+    const labelCalendarOrDate =
+      LABEL_ONLY_DATE_HEADER_LINE.test(line) || LABEL_ONLY_CALENDAR_LINE.test(line);
+    if (labelCalendarOrDate) {
+      for (let j = i + 1; j < Math.min(lines.length, i + 12); j++) {
+        const next = lines[j]?.trim();
+        if (!next) continue;
+        if (lineHasParsableDate(next)) return true;
+      }
+    }
+
+    if (/^\s*📅[^\n]+$/.test(line) && lineHasParsableDate(line)) return true;
+  }
+  return false;
+}
+
+function stripStickyFooter(txt: string): string {
+  const m = /\n[^\n]*(Надіслати івент|SiS зі знижкою|fartlek_services)\b/i.exec(
+    txt,
+  );
+  if (m && m.index !== undefined && m.index > 40) return txt.slice(0, m.index).trim();
+  return txt.trim();
+}
+
+function preprocessTelegramBody(post: TelegramPost): string {
+  let t = post.text.replace(/[\u200B-\u200D\u2060\uFEFF\u2800]/g, "");
+  /** NBSP, тонкий/цифровий пробіл — у превʼю t.me часто «6\u00a0км» замість «6 км». */
+  t = t.replace(/[\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]/g, " ");
+  return stripStickyFooter(t);
+}
+
+/** Для синку: текст причини, якщо допис не входить до дашборду; інакше `null`. */
+export function telegramPostDashboardRejectReason(
+  post: TelegramPost,
+): string | null {
+  const bodyPlain = preprocessTelegramBody(post);
+  const meta = parseTelegramPost({ ...post, text: bodyPlain });
+  if (!mentionsKilometers(bodyPlain))
+    return "нема згадки дистанції (км / km / K / кирилична К)";
+  if (!hasExplicitEventDateScheduling(bodyPlain)) {
+    return "немає прийнятої мітки дати або діапазону dd.mm.yyyy — dd.mm.yyyy";
+  }
+  const eventIsoCandidate = meta.date ?? tryParseDate(bodyPlain);
+  if (!eventIsoCandidate) return "дату події не вдалося перетворити в ISO з тексту";
+  if (!isoMatchesTargetYears(eventIsoCandidate)) {
+    const y = dashboardTargetYearPrefixes().join(", ");
+    return `дата поза налаштуванням років (${y})`;
+  }
+  return null;
+}
 
 /**
  * Повертає null, якщо допис не потрапляє на дашборд / у кеш таблиці:
- * лише події 2026 року, із зазначенням км/K та явною датою в тексті.
+ * лише події налаштованих років ISO-дати; згадка км/K та явний блок «Дата» у тексті.
  */
 export function parseTelegramPostForDashboard(post: TelegramPost): {
   bodyPlain: string;
   meta: ParsedEventFromTelegram;
   eventIso: string;
 } | null {
-  const bodyPlain = stripStickyFooter(
-    post.text.replace(/[\u200B-\u200D\u2060\uFEFF\u2800]/g, ""),
-  );
+  const bodyPlain = preprocessTelegramBody(post);
+  const reason = telegramPostDashboardRejectReason({
+    ...post,
+    text: bodyPlain,
+  });
+  if (reason !== null) return null;
+
   const meta = parseTelegramPost({ ...post, text: bodyPlain });
-  if (!mentionsKilometers(bodyPlain)) return null;
-  if (!EXPLICIT_EVENT_DATE_MARKER.test(bodyPlain)) return null;
   const eventIsoCandidate = meta.date ?? tryParseDate(bodyPlain);
-  if (
-    !eventIsoCandidate ||
-    !eventIsoCandidate.startsWith(TARGET_EVENT_YEAR_PREFIX)
-  ) {
-    return null;
-  }
+  if (!eventIsoCandidate) return null;
   return { bodyPlain, meta, eventIso: eventIsoCandidate };
 }
 
@@ -55,19 +155,36 @@ export function parseTelegramPostForDashboard(post: TelegramPost): {
  * Чи треба зберігати цей допис у `telegram_posts` (фільтр як у парсері дашборду).
  */
 export function telegramPostShouldSyncToDb(post: TelegramPost): boolean {
-  return parseTelegramPostForDashboard(post) !== null;
+  return telegramPostDashboardRejectReason(post) === null;
 }
 
 /**
- * Є згадка дистанції в км / K у тексті допису (умова включення до дашборду 2026 км).
+ * Є згадка дистанції в км / K у тексті допису (умова включення до дашборду).
+ * У афішах трапляються кирилична «К» замість латинської K (як «6 К» після VERTICAL тощо)
+ * Типові афішні рядки: «6 км», «9 км, 23 км»; також km, K та кирилична «К» після числа.
  */
 export function mentionsKilometers(text: string): boolean {
+  /** «Число + пробіл(и) + км» — основний кейс каналів (після preprocess і NBSP тощо). */
   if (/\d+[,.]?\d*\s*(км\b|км\.|км,)/iu.test(text)) return true;
-  if (/\b\d{1,3}\s*[kK]\b/i.test(text)) return true;
-  if (/\b\d{1,3}\s*km\b/i.test(text)) return true;
+  /** лат. k/K, кирилична К/к — окремий токен після числа */
+  if (/\b\d+[,.]?\d*\s*[kKКк]\b/u.test(text)) return true;
+  if (/\d+[,.]?\d*km\b/iu.test(text)) return true;
+  if (/\b\d+[,.]?\d*\s+km\b/i.test(text)) return true;
+  /** «23км» без проміжку */
+  if (/\d+[,.]?\d*км\b/iu.test(text)) return true;
+  /** трейлові блоки каналів: число поруч із міткою дистанції */
+  if (
+    /\b(?:VERTICAL|LITE|MARATHON|ULTRA|MEDIUM|HALF|SPRINT|Sprint)\b[^\n|\r]{0,60}\d+[,.]?\d*/i.test(
+      text,
+    )
+  )
+    return true;
+  /** формат таблиць « … | 6 km » */
+  if (/\|\s*\d+[,.]?\d*\s*(км|km|[kKКк])(?!\p{L})/iu.test(text)) return true;
+
   if (/\d+[,.]\d{3}\s*км/iu.test(text)) return true;
   if (
-    /\bДистанц[іiї]?\b[^\n]{0,120}(\d+[,.]?\d*\s*[kKкм]|км)/iu.test(text)
+    /\bДистанц[іiї]?\b[^\n]{0,120}(\d+[,.]?\d*\s*[kKКкм]|км)/iu.test(text)
   ) {
     return true;
   }
@@ -153,14 +270,6 @@ const KYIV_FALLBACK = getCityByName("Київ") ?? {
   lat: 50.4501,
   lng: 30.5234,
 };
-
-function stripStickyFooter(txt: string): string {
-  const m = /\n[^\n]*(Надіслати івент|SiS зі знижкою|fartlek_services)\b/i.exec(
-    txt,
-  );
-  if (m && m.index !== undefined && m.index > 40) return txt.slice(0, m.index).trim();
-  return txt.trim();
-}
 
 function parseOrganizerLine(text: string): string | null {
   const m =

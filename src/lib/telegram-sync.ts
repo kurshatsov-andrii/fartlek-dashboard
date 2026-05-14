@@ -8,17 +8,23 @@ import {
   getMaxTelegramPostIdFromDb,
   upsertTelegramPosts,
 } from "@/lib/telegram-db";
-import { telegramPostShouldSyncToDb } from "@/lib/sport-events-from-telegram";
+import { telegramPostDashboardRejectReason } from "@/lib/sport-events-from-telegram";
 
 export interface TelegramSyncResult {
   fetchedAt: string;
   /** Рядків з Telegram після дедупу (до фільтру) */
   fetchedBeforeFilter: number;
-  /** Потрапляють у БД (івенти 2026 + дата в тексті + км) */
+  /** Потрапляють у БД (роки з `DASHBOARD_TELEGRAM_TARGET_YEAR_PREFIXES`, дата в тексті + км) */
   remoteCount: number;
   /** Upsert у Supabase */
   upsertedCount: number;
   mode: "bootstrap" | "incremental" | "heartbeat";
+  /** Чому відсіяли дописи (до 5) — для діагностики в адмінці. */
+  skippedSamples?: Array<{
+    postId: number;
+    reason: string;
+    textPreview: string;
+  }>;
 }
 
 async function dedupePosts(posts: TelegramPost[]): Promise<TelegramPost[]> {
@@ -57,7 +63,23 @@ export async function syncTelegramToDatabase(): Promise<TelegramSyncResult> {
   }
 
   const deduped = await dedupePosts(fromNetwork);
-  const merged = deduped.filter((p) => telegramPostShouldSyncToDb(p));
+  const merged: TelegramPost[] = [];
+  const rejected: { post: TelegramPost; reason: string }[] = [];
+
+  for (const p of deduped) {
+    const skipReason = telegramPostDashboardRejectReason(p);
+    if (skipReason === null) merged.push(p);
+    else rejected.push({ post: p, reason: skipReason });
+  }
+
+  const skippedSamples =
+    rejected.length > 0
+      ? rejected.slice(0, 5).map(({ post: p, reason }) => ({
+          postId: p.postId,
+          reason,
+          textPreview: p.text.slice(0, 220).replace(/\s+/g, " ").trim(),
+        }))
+      : undefined;
 
   const upsertedCount =
     merged.length > 0 ? await upsertTelegramPosts(merged) : 0;
@@ -68,5 +90,6 @@ export async function syncTelegramToDatabase(): Promise<TelegramSyncResult> {
     remoteCount: merged.length,
     upsertedCount,
     mode,
+    ...(skippedSamples ? { skippedSamples } : {}),
   };
 }

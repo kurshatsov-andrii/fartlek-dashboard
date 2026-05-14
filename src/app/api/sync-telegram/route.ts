@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { TELEGRAM_DASHBOARD_CACHE_TAG } from "@/lib/telegram-dashboard-cache";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { syncTelegramToDatabase } from "@/lib/telegram-sync";
+import { dashboardTargetYearPrefixes } from "@/lib/sport-events-from-telegram";
 
 export const maxDuration = 300;
 
@@ -34,15 +35,21 @@ export async function POST(req: NextRequest) {
   try {
     const result = await syncTelegramToDatabase();
     revalidateTag(TELEGRAM_DASHBOARD_CACHE_TAG);
+    const years = dashboardTargetYearPrefixes().join(", ");
+    const skipHint =
+      result.skippedSamples?.length ?
+        ` Відсіювання: ${result.skippedSamples.map((s) => `#${s.postId}: ${s.reason}`).join("; ")}.`
+        : "";
+
     return NextResponse.json({
       ok: true,
       ...result,
       message:
         result.mode === "incremental"
-          ? `Отримано ${result.fetchedBeforeFilter} дописів з каналу; після фільтру (2026, дата, км): ${result.remoteCount}; збережено: ${result.upsertedCount}.`
+          ? `Отримано ${result.fetchedBeforeFilter} дописів з каналу; після фільтру (${years}, мітки дати, км): ${result.remoteCount}; збережено: ${result.upsertedCount}.${skipHint}`
           : result.mode === "bootstrap"
-            ? `Bootstrap: із каналу ${result.fetchedBeforeFilter}; у БД після фільтру: ${result.upsertedCount}.`
-            : `Нові id не з’явились; сторінка превʼю без фільтрованих записів або оновлено ${result.upsertedCount} рядків.`,
+            ? `Bootstrap: із каналу ${result.fetchedBeforeFilter}; у БД після фільтру: ${result.upsertedCount}.${skipHint}`
+            : `Нові id не з’явились; перевірено останню сторінку превʼю (оновлення метрик / фільтр): збережено ${result.upsertedCount} рядків.${skipHint}`,
     });
   } catch (e) {
     console.error("[sync-telegram]", e);

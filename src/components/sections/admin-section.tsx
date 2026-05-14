@@ -27,6 +27,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { SectionHeader } from "./stats-section";
 import { EventCoverImage } from "@/components/event/event-cover-image";
@@ -60,6 +61,7 @@ interface AdminSectionProps {
 }
 
 export function AdminSection({ events, logs }: AdminSectionProps) {
+  const router = useRouter();
   const stats = computeStats(events);
   const monthly = eventsPerMonth(events);
   const growth = monthlyGrowth(events);
@@ -84,11 +86,20 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
         ok?: boolean;
         upsertedCount?: number;
         remoteCount?: number;
+        fetchedBeforeFilter?: number;
         mode?: string;
+        message?: string;
         error?: string;
       };
       if (!res.ok || data.ok === false) {
         setLastSync(data.error ?? `Помилка ${res.status}`);
+        return;
+      }
+      router.refresh();
+      if (typeof data.message === "string" && data.message.trim()) {
+        setLastSync(
+          `${data.message} (${new Date().toLocaleTimeString("uk-UA")})`,
+        );
         return;
       }
       const cnt = data.upsertedCount ?? data.remoteCount ?? "—";
@@ -98,8 +109,14 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
           : data.mode === "bootstrap"
             ? "перше наповнення"
             : "оновлення метрик";
+      const detail =
+        data.fetchedBeforeFilter != null &&
+        data.remoteCount != null &&
+        data.upsertedCount != null
+          ? ` з каналу ${data.fetchedBeforeFilter}; після фільтру: ${data.remoteCount}; збережено: ${data.upsertedCount}`
+          : `: збережено ${cnt} з Telegram`;
       setLastSync(
-        `${modeUk}: збережено ${cnt} з Telegram о ${new Date().toLocaleTimeString("uk-UA")}`,
+        `${modeUk}${detail} о ${new Date().toLocaleTimeString("uk-UA")}`,
       );
     } catch {
       setLastSync("Помилка синхронізації — спробуйте ще раз");
