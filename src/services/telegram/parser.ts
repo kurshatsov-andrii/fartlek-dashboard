@@ -160,6 +160,22 @@ function tryParseCity(text: string): string | null {
   return null;
 }
 
+/**
+ * Рядок афіші «Місто: Пилипець, Закарпатська область» — беремо населений пункт до коми/крапки з комою.
+ */
+function tryParseCityFromLabeledLine(text: string): string | null {
+  const re =
+    /(?:^|\n)\s*(?:📍\s*)?(?:Місто|Місце\s*проведення|Локація|Де|Location)\s*[:：]\s*([^\n]+)/imu;
+  const m = re.exec(text);
+  if (!m?.[1]) return null;
+  const segment = m[1].trim().replace(/\s*#.*$/u, "").trim();
+  const beforeSep =
+    segment.split(/[,;:]/)[0]?.replace(/\s+/g, " ").trim() ?? "";
+  const cityPart = beforeSep.replace(/\s*\([^)]*\)\s*$/u, "").trim();
+  if (cityPart.length >= 2 && cityPart.length <= 80) return cityPart;
+  return null;
+}
+
 function cleanCandidateTitle(raw: string): string {
   let s = raw.trim();
   // Strip zero-width chars Telegram preview uses as artwork anchors.
@@ -237,7 +253,8 @@ export function parseTelegramPost(
 ): ParsedEventFromTelegram {
   const title = tryParseTitle(post.text);
   const date = tryParseDate(post.text);
-  const city = tryParseCity(post.text);
+  const city =
+    tryParseCityFromLabeledLine(post.text) ?? tryParseCity(post.text);
   const links = post.text.match(TG_TEXT_URL_REGEX) ?? [];
   const allLinks = Array.from(new Set([...(post.links ?? []), ...links]));
   const registrationLink = tryParseRegistration(allLinks, post.text);

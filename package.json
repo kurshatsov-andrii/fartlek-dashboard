@@ -15,6 +15,8 @@
     "refresh:post-images": "tsx --tsconfig tsconfig.json scripts/refresh-telegram-post-images-from-html.ts"
   },
   "dependencies": {
+    "@langchain/core": "^1.1.46",
+    "@langchain/openai": "^1.4.5",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.105.4",
     "class-variance-authority": "^0.7.1",
@@ -25,6 +27,7 @@
     "next": "^15.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-markdown": "^10.1.0",
     "recharts": "^2.15.0",
     "tailwind-merge": "^2.6.0"
   },

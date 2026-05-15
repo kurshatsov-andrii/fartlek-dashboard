@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
+  Bot,
   Flame,
   Heart,
   Menu,
@@ -194,6 +195,14 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
+              <Link
+                href="/assistant"
+                onClick={() => setMobileOpen(false)}
+                className="px-4 py-3 rounded-xl text-sm text-white/85 hover:text-white hover:bg-neon/10 border border-white/5 hover:border-neon/25 active:bg-neon/15 min-h-[44px] flex items-center gap-2"
+              >
+                <Bot className="h-4 w-4 text-neon shrink-0" aria-hidden />
+                Fartlek AI
+              </Link>
             </div>
             <div className="h-px bg-white/10" />
             <div className="text-[10px] font-mono uppercase tracking-widest text-neon/80 px-1">
@@ -213,16 +222,26 @@ export function Navbar() {
             </div>
           </>
         ) : (
-          USER_SITE_NAV.map((item) => (
+          <>
+            {USER_SITE_NAV.map((item) => (
+              <Link
+                key={item.hash}
+                href={userSiteHref(item.hash)}
+                onClick={userSiteNavClick(item.hash)}
+                className="px-4 py-3 rounded-xl text-sm text-white/85 hover:text-white hover:bg-white/5 active:bg-white/10 min-h-[44px] flex items-center"
+              >
+                {item.label}
+              </Link>
+            ))}
             <Link
-              key={item.hash}
-              href={userSiteHref(item.hash)}
-              onClick={userSiteNavClick(item.hash)}
-              className="px-4 py-3 rounded-xl text-sm text-white/85 hover:text-white hover:bg-white/5 active:bg-white/10 min-h-[44px] flex items-center"
+              href="/assistant"
+              onClick={() => setMobileOpen(false)}
+              className="px-4 py-3 rounded-xl text-sm text-white/85 hover:text-white hover:bg-neon/10 border border-white/5 hover:border-neon/25 active:bg-neon/15 min-h-[44px] flex items-center gap-2"
             >
-              {item.label}
+              <Bot className="h-4 w-4 text-neon shrink-0" aria-hidden />
+              Fartlek AI
             </Link>
-          ))
+          </>
         )}
         <button
           type="button"
@@ -321,6 +340,13 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
+              <Link
+                href="/assistant"
+                className={cn(navMuted, "inline-flex items-center gap-1.5")}
+              >
+                <Bot className="h-3.5 w-3.5 text-neon shrink-0" aria-hidden />
+                AI
+              </Link>
               <span className="w-px h-4 bg-white/15 shrink-0 mx-0.5" aria-hidden />
               <span className={adminNavGroupClass}>Адмін</span>
               {ADMIN_PANEL_NAV.map((item) => (
@@ -346,6 +372,16 @@ export function Navbar() {
                   {item.label}
                 </Link>
               ))}
+              <Link
+                href="/assistant"
+                className={cn(
+                  navMuted,
+                  "px-3 inline-flex items-center gap-1.5",
+                )}
+              >
+                <Bot className="h-3.5 w-3.5 text-neon shrink-0" aria-hidden />
+                AI
+              </Link>
             </nav>
           )}
 
