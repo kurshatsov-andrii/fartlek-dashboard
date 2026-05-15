@@ -11,6 +11,15 @@ function clientAuthReady(): boolean {
   );
 }
 
+/** Canonical site origin for magic-link redirects (Vercel / prod). Falls back to browser origin. */
+function authRedirectOrigin(): string {
+  const raw = process.env.NEXT_PUBLIC_SITE_URL?.trim();
+  const fromEnv = raw ? raw.replace(/\/$/, "") : "";
+  if (fromEnv) return fromEnv;
+  if (typeof window !== "undefined") return window.location.origin;
+  return "";
+}
+
 type LoginFormProps = {
   redirectPath: string;
   gateConfigured: boolean;
@@ -57,10 +66,18 @@ export function AdminMagicLinkForm({
 
       const supabase = createSupabaseBrowserClient();
       const nextEnc = encodeURIComponent(redirectPath);
+      const origin = authRedirectOrigin();
+      if (!origin) {
+        setStatus({
+          tone: "err",
+          text: "Не вдалося визначити адресу сайту для посилання входу.",
+        });
+        return;
+      }
       const { error } = await supabase.auth.signInWithOtp({
         email: trimmed,
         options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback?next=${nextEnc}`,
+          emailRedirectTo: `${origin}/auth/callback?next=${nextEnc}`,
         },
       });
       if (error) {
