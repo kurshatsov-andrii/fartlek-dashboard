@@ -69,7 +69,7 @@ export default async function HomePage() {
   return (
     <>
       <Navbar />
-      <main className="relative min-h-screen">
+      <main className="relative min-h-screen pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-0">
         <Hero
           nextEvent={nextEvent}
           totalEvents={stats.totalEvents}

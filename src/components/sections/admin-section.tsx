@@ -143,7 +143,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
           title="Операційний дашборд"
           description="Відстежуйте дохід, стан контенту та пайплайн імпорту з Telegram."
           action={
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 w-full md:w-auto md:justify-end">
               <Button variant="ghost" onClick={handleSync} disabled={syncing}>
                 <RefreshCw
                   className={`h-4 w-4 ${syncing ? "animate-spin" : ""}`}
@@ -397,14 +397,14 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                 ))}
               </ul>
             </motion.div>
-
-            <div
-              id="quick-add-event"
-              className="scroll-mt-28 md:scroll-mt-32"
-            >
-              <QuickEventSubmitForm />
-            </div>
           </div>
+        </div>
+
+        <div
+          id="quick-add-event"
+          className="mt-10 lg:mt-14 scroll-mt-28 md:scroll-mt-32"
+        >
+          <QuickEventSubmitForm />
         </div>
       </div>
     </section>

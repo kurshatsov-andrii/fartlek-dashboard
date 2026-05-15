@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
   Flame,
@@ -42,6 +43,7 @@ export function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const { count } = useFavorites();
 
@@ -90,7 +92,7 @@ export function Navbar() {
   };
 
   const adminPanelNavClick = (elementId: string) => (e: React.MouseEvent) => {
-    if (pathname === "/admin") {
+    if (pathname.startsWith("/admin") && !pathname.startsWith("/admin/login")) {
       e.preventDefault();
       scrollAdminPanelSection(elementId);
     }
@@ -113,6 +115,26 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [mobileOpen]);
+
   const navMuted =
     "px-2.5 xl:px-3 py-1.5 rounded-full text-[13px] text-white/70 hover:text-white hover:bg-white/5 transition-colors whitespace-nowrap";
   const navEmphasis =
@@ -121,25 +143,158 @@ export function Navbar() {
   const adminNavGroupClass =
     "text-[10px] font-mono uppercase tracking-wider text-white/35 px-1 select-none whitespace-nowrap";
 
-  return (
-    <motion.header
-      initial={{ y: -40, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.4 }}
-      className={cn(
-        "fixed top-0 inset-x-0 z-50 transition-all duration-300",
-        scrolled ? "py-2" : "py-4",
-      )}
+  const mobileNavPanel = (
+    <motion.div
+      key="mobile-menu-layer"
+      role="presentation"
+      className="fixed inset-0 z-[60] lg:hidden"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
     >
-      <div className="container mx-auto px-4">
-        <div
-          className={cn(
-            "flex items-center justify-between gap-4 rounded-full px-4 md:px-6 py-2.5 transition-all duration-300",
-            scrolled
-              ? "glass-strong shadow-xl shadow-black/20"
-              : "bg-transparent",
-          )}
+      <div
+        className="absolute inset-0 bg-black/55 backdrop-blur-[2px] touch-none"
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+        }}
+        aria-hidden
+        onPointerDown={(e) => {
+          e.preventDefault();
+          setMobileOpen(false);
+        }}
+      />
+      <nav
+        id="mobile-primary-nav"
+        role="navigation"
+        aria-label="Головне меню"
+        className={cn(
+          "absolute left-3 right-3 z-[1] glass-strong rounded-2xl border border-white/12 shadow-2xl shadow-black/50",
+          "flex flex-col gap-3 p-3 max-h-[min(75dvh,calc(100dvh-5.25rem-env(safe-area-inset-top)-env(safe-area-inset-bottom)))] overflow-y-auto overscroll-contain touch-manipulation",
+        )}
+        style={{
+          top: "calc(5rem + env(safe-area-inset-top, 0px))",
+        }}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
+        {isAdminDashboard ? (
+          <>
+            <div className="text-[10px] font-mono uppercase tracking-widest text-white/40 px-1">
+              Перегляд сайту (користувач)
+            </div>
+            <div className="flex flex-col gap-0.5">
+              {USER_SITE_NAV.map((item) => (
+                <Link
+                  key={`m-site-${item.hash}`}
+                  href={userSiteHref(item.hash)}
+                  onClick={userSiteNavClick(item.hash)}
+                  className="px-4 py-3 rounded-xl text-sm text-white/85 hover:text-white hover:bg-white/5 active:bg-white/10 min-h-[44px] flex items-center"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+            <div className="h-px bg-white/10" />
+            <div className="text-[10px] font-mono uppercase tracking-widest text-neon/80 px-1">
+              Адмін-панель
+            </div>
+            <div className="flex flex-col gap-0.5">
+              {ADMIN_PANEL_NAV.map((item) => (
+                <Link
+                  key={`m-ad-${item.id}`}
+                  href={`/admin#${item.id}`}
+                  onClick={adminPanelNavClick(item.id)}
+                  className="px-4 py-3 rounded-xl text-sm font-medium text-white/92 hover:bg-neon/10 border border-white/5 hover:border-neon/25 active:bg-neon/15 min-h-[44px] flex items-center"
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </>
+        ) : (
+          USER_SITE_NAV.map((item) => (
+            <Link
+              key={item.hash}
+              href={userSiteHref(item.hash)}
+              onClick={userSiteNavClick(item.hash)}
+              className="px-4 py-3 rounded-xl text-sm text-white/85 hover:text-white hover:bg-white/5 active:bg-white/10 min-h-[44px] flex items-center"
+            >
+              {item.label}
+            </Link>
+          ))
+        )}
+        <button
+          type="button"
+          onClick={() => {
+            goToSearch();
+          }}
+          className="md:hidden px-4 py-3 rounded-xl text-sm text-left text-white/85 hover:bg-white/5 border border-white/10 flex items-center gap-2 min-h-[44px]"
         >
+          <SearchIcon className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
+          Пошук подій
+        </button>
+        <Link
+          href="/#favorites"
+          onClick={(e) => {
+            if (scrollToHomeSection("#favorites")) e.preventDefault();
+            setMobileOpen(false);
+          }}
+          className="sm:hidden px-4 py-3 rounded-xl text-sm text-white/85 hover:bg-white/5 border border-white/10 flex items-center gap-2 min-h-[44px]"
+        >
+          <Heart className="h-4 w-4 shrink-0 opacity-70" aria-hidden />
+          Обране
+          {count > 0 && (
+            <span className="ml-auto h-6 min-w-6 px-2 grid place-items-center rounded-full bg-neon text-ink-950 text-xs font-bold">
+              {count}
+            </span>
+          )}
+        </Link>
+        {showVisitorAdminPortal ? (
+          <Link
+            href="/admin"
+            onClick={() => setMobileOpen(false)}
+            className={cn(
+              "mt-0.5 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2 border min-h-[44px]",
+              isAdminLoggedIn ?
+                "border-neon/35 bg-neon/10 text-neon"
+              : "border-white/10 text-white/85 hover:bg-white/5",
+            )}
+          >
+            {isAdminLoggedIn ? (
+              <>
+                <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
+                У адмін-панель
+              </>
+            ) : (
+              <>
+                <Shield className="h-4 w-4 shrink-0 opacity-90" aria-hidden />
+                В адмін-панель
+              </>
+            )}
+          </Link>
+        ) : null}
+      </nav>
+    </motion.div>
+  );
+
+  return (
+    <>
+      <header
+        className={cn(
+          "fixed top-0 inset-x-0 z-50 pt-[env(safe-area-inset-top)] transition-all duration-300",
+          scrolled ? "py-2" : "py-4",
+        )}
+      >
+        <div className="container mx-auto px-4">
+          <div
+            className={cn(
+              "flex items-center justify-between gap-4 rounded-full px-4 md:px-6 py-2.5 transition-all duration-300",
+              scrolled
+                ? "glass-strong shadow-xl shadow-black/20"
+                : "bg-transparent",
+            )}
+          >
           <Link href="/" className="flex shrink-0 items-center gap-2.5 group">
             <span className="relative grid place-items-center h-9 w-9 rounded-full bg-neon text-ink-950 shadow-neon-sm transition-transform group-hover:scale-110">
               <Flame className="h-5 w-5" strokeWidth={2.5} />
@@ -262,8 +417,10 @@ export function Navbar() {
             <button
               type="button"
               onClick={() => setMobileOpen((v) => !v)}
-              className="lg:hidden h-9 w-9 inline-flex items-center justify-center rounded-full bg-white/5 border border-white/10"
-              aria-label="Меню"
+              className="lg:hidden min-h-[44px] min-w-[44px] h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full bg-white/5 border border-white/10 touch-manipulation"
+              aria-label={mobileOpen ? "Закрити меню" : "Відкрити меню"}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-primary-nav"
             >
               {mobileOpen ? (
                 <X className="h-4 w-4" />
@@ -273,93 +430,16 @@ export function Navbar() {
             </button>
           </div>
         </div>
-
-        <AnimatePresence>
-          {mobileOpen && (
-            <motion.nav
-              initial={{ opacity: 0, y: -10, height: 0 }}
-              animate={{ opacity: 1, y: 0, height: "auto" }}
-              exit={{ opacity: 0, y: -10, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="lg:hidden mt-2 glass-strong rounded-2xl p-3 flex flex-col gap-3 max-h-[min(72vh,var(--radix-viewport,height))] overflow-y-auto"
-            >
-              {isAdminDashboard ? (
-                <>
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-white/40 px-1">
-                    Перегляд сайту (користувач)
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    {USER_SITE_NAV.map((item) => (
-                      <Link
-                        key={`m-site-${item.hash}`}
-                        href={userSiteHref(item.hash)}
-                        onClick={userSiteNavClick(item.hash)}
-                        className="px-4 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5"
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                  <div className="h-px bg-white/10" />
-                  <div className="text-[10px] font-mono uppercase tracking-widest text-neon/80 px-1">
-                    Адмін-панель
-                  </div>
-                  <div className="flex flex-col gap-0.5">
-                    {ADMIN_PANEL_NAV.map((item) => (
-                      <Link
-                        key={`m-ad-${item.id}`}
-                        href={`/admin#${item.id}`}
-                        onClick={adminPanelNavClick(item.id)}
-                        className="px-4 py-2.5 rounded-xl text-sm font-medium text-white/92 hover:bg-neon/10 border border-white/5 hover:border-neon/25"
-                      >
-                        {item.label}
-                      </Link>
-                    ))}
-                  </div>
-                </>
-              ) : (
-                USER_SITE_NAV.map((item) => (
-                  <Link
-                    key={item.hash}
-                    href={userSiteHref(item.hash)}
-                    onClick={userSiteNavClick(item.hash)}
-                    className="px-4 py-2.5 rounded-xl text-sm text-white/80 hover:text-white hover:bg-white/5"
-                  >
-                    {item.label}
-                  </Link>
-                ))
-              )}
-              {showVisitorAdminPortal ? (
-                <Link
-                  href="/admin"
-                  onClick={() => setMobileOpen(false)}
-                  className={cn(
-                    "mt-0.5 px-4 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 border",
-                    isAdminLoggedIn ?
-                      "border-neon/35 bg-neon/10 text-neon"
-                    : "border-white/10 text-white/85 hover:bg-white/5",
-                  )}
-                >
-                  {isAdminLoggedIn ? (
-                    <>
-                      <ArrowLeft className="h-4 w-4 shrink-0" aria-hidden />
-                      У адмін-панель
-                    </>
-                  ) : (
-                    <>
-                      <Shield
-                        className="h-4 w-4 shrink-0 opacity-90"
-                        aria-hidden
-                      />
-                      В адмін-панель
-                    </>
-                  )}
-                </Link>
-              ) : null}
-            </motion.nav>
-          )}
-        </AnimatePresence>
-      </div>
-    </motion.header>
+        </div>
+      </header>
+      {mounted
+        ? createPortal(
+            <AnimatePresence>
+              {mobileOpen ? mobileNavPanel : null}
+            </AnimatePresence>,
+            document.body,
+          )
+        : null}
+    </>
   );
 }

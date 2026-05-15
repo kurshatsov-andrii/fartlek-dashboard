@@ -27,14 +27,14 @@ export function QuickEventSubmitForm() {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.4, delay: 0.1 }}
-      className="glass rounded-2xl p-5"
+      className="glass-strong rounded-3xl border border-white/[0.09] p-6 md:p-8 shadow-xl shadow-black/20"
     >
       <h3 className="font-display text-lg font-semibold flex items-center gap-2 mb-3">
         <Plus className="h-4 w-4 text-neon" />
         Швидке додавання
       </h3>
       <form
-        className="space-y-2"
+        className="space-y-3"
         onSubmit={async (e) => {
           e.preventDefault();
           const formEl = e.currentTarget;

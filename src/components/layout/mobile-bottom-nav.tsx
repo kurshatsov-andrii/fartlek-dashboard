@@ -54,7 +54,7 @@ export function MobileBottomNav() {
       initial={{ y: 80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ delay: 0.3 }}
-      className="lg:hidden fixed bottom-3 inset-x-3 z-40 glass-strong rounded-2xl px-2 py-2 flex items-center justify-around shadow-2xl shadow-black/40"
+      className="lg:hidden fixed bottom-[max(0.75rem,env(safe-area-inset-bottom))] inset-x-3 z-40 glass-strong rounded-2xl px-2 py-2 flex items-center justify-around shadow-2xl shadow-black/40 touch-manipulation"
     >
       {ITEMS.map((item) => {
         const Icon = item.icon;

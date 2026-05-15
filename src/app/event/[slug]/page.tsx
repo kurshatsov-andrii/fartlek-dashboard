@@ -87,7 +87,7 @@ export default async function EventAnalysisPage({
   return (
     <>
       <Navbar />
-      <main className="relative min-h-screen pt-20 pb-28 md:pb-16">
+      <main className="relative min-h-screen pt-20 pb-[calc(7rem+env(safe-area-inset-bottom))] md:pb-16 lg:pb-16">
         <div className="container mx-auto px-4 max-w-4xl mb-4">
           <Link
             href="/#events"

@@ -25,7 +25,7 @@ export default async function AdminDashboardPage() {
   return (
     <>
       <Navbar />
-      <main className="relative min-h-screen">
+      <main className="relative min-h-screen pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-4">
         <div className="container mx-auto px-4 pt-[5.25rem] md:pt-[5.5rem] pb-4 flex justify-end gap-3">
           <AdminLogoutBar />
         </div>
