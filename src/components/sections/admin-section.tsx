@@ -125,8 +125,18 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
     }
   };
 
+  const scrollToQuickAdd = () => {
+    document.getElementById("quick-add-event")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
   return (
-    <section id="admin" className="relative py-16 md:py-20">
+    <section
+      id="admin-dashboard"
+      className="relative scroll-mt-28 md:scroll-mt-32 py-16 md:py-20"
+    >
       <div className="container mx-auto px-4">
         <SectionHeader
           eyebrow="Адмін · Аналітика"
@@ -140,7 +150,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                 />
                 {syncing ? "Синхронізація..." : "Синхронізувати"}
               </Button>
-              <Button>
+              <Button type="button" onClick={scrollToQuickAdd}>
                 <Plus className="h-4 w-4" />
                 Додати подію
               </Button>
@@ -388,7 +398,12 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
               </ul>
             </motion.div>
 
-            <QuickEventSubmitForm />
+            <div
+              id="quick-add-event"
+              className="scroll-mt-28 md:scroll-mt-32"
+            >
+              <QuickEventSubmitForm />
+            </div>
           </div>
         </div>
       </div>

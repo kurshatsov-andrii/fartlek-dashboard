@@ -3,16 +3,12 @@ import { Footer } from "@/components/layout/footer";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
 import { FloatingActionButton } from "@/components/layout/floating-action-button";
 import { Hero } from "@/components/sections/hero";
-import { StatsSection } from "@/components/sections/stats-section";
-import { ChartsSection } from "@/components/sections/charts-section";
 import { EventsSection } from "@/components/sections/events-section";
 import { CalendarSection } from "@/components/sections/calendar-section";
 import { MapSection } from "@/components/sections/map-section";
 import { TopEventsSection } from "@/components/sections/top-events-section";
 import { OrganizersSection } from "@/components/sections/organizers-section";
 import { FavoritesSection } from "@/components/sections/favorites-section";
-import { AdminSection } from "@/components/sections/admin-section";
-
 import { computeStats } from "@/lib/analytics";
 import { fetchTelegramDashboard } from "@/lib/telegram-dashboard-cache";
 import { sportEventAbsoluteUrl } from "@/lib/event-detail";
@@ -22,7 +18,7 @@ export const revalidate = 600;
 export const maxDuration = 300;
 
 export default async function HomePage() {
-  const { events: EVENTS, organizers, logs } = await fetchTelegramDashboard();
+  const { events: EVENTS, organizers } = await fetchTelegramDashboard();
 
   const UPCOMING_EVENTS = EVENTS.filter((e) => e.state === "upcoming").sort(
     (a, b) =>
@@ -79,15 +75,12 @@ export default async function HomePage() {
           totalEvents={stats.totalEvents}
           citiesCount={stats.citiesCount}
         />
-        <StatsSection stats={stats} />
-        <ChartsSection events={EVENTS} />
         <EventsSection upcoming={UPCOMING_EVENTS} finished={FINISHED_EVENTS} />
         <CalendarSection events={EVENTS} />
         <MapSection events={EVENTS} />
         <TopEventsSection events={EVENTS} upcoming={UPCOMING_EVENTS} />
         <OrganizersSection organizers={organizers} events={EVENTS} />
         <FavoritesSection events={EVENTS} />
-        <AdminSection events={EVENTS} logs={logs} />
       </main>
       <Footer />
       <MobileBottomNav />

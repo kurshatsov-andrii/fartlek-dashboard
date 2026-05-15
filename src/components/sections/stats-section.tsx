@@ -87,7 +87,10 @@ export function StatsSection({ stats }: StatsSectionProps) {
   ];
 
   return (
-    <section id="stats" className="relative py-16 md:py-20">
+    <section
+      id="stats"
+      className="relative scroll-mt-28 md:scroll-mt-32 py-16 md:py-20"
+    >
       <div className="container mx-auto px-4">
         <SectionHeader
           eyebrow="Огляд"

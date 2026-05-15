@@ -154,7 +154,10 @@ export function ChartsSection({ events }: ChartsSectionProps) {
   const pieStatusTotal = vs.reduce((s, d) => s + d.value, 0);
 
   return (
-    <section className="relative py-16 md:py-20">
+    <section
+      id="charts"
+      className="relative scroll-mt-28 md:scroll-mt-32 py-16 md:py-20"
+    >
       <div className="container mx-auto px-4">
         <SectionHeader
           eyebrow="Аналітика"

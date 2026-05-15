@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Plus, Activity, Sparkles } from "lucide-react";
+import { ArrowRight, Activity, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CountdownTimer } from "@/components/widgets/countdown-timer";
 import type { SportEvent } from "@/types";
@@ -75,18 +75,6 @@ export function Hero({ nextEvent, totalEvents, citiesCount }: HeroProps) {
                 size="lg"
                 onClick={() => {
                   document
-                    .getElementById("admin")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-              >
-                <Plus className="h-5 w-5" />
-                Додати подію
-              </Button>
-              <Button
-                size="lg"
-                variant="ghost"
-                onClick={() => {
-                  document
                     .getElementById("events")
                     ?.scrollIntoView({ behavior: "smooth" });
                 }}
@@ -108,7 +96,7 @@ export function Hero({ nextEvent, totalEvents, citiesCount }: HeroProps) {
               </div>
               <div className="flex items-center gap-2 text-white/70">
                 <Sparkles className="h-4 w-4 text-neon" />
-                Преміум UI · 100 ₴ за публікацію
+                Пошук, фільтри та обране
               </div>
             </motion.div>
           </div>

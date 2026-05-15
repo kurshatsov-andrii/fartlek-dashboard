@@ -4,19 +4,10 @@ import { TELEGRAM_DASHBOARD_CACHE_TAG } from "@/lib/telegram-dashboard-cache";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { syncTelegramToDatabase } from "@/lib/telegram-sync";
 import { dashboardTargetYearPrefixes } from "@/lib/sport-events-from-telegram";
+import { canPostTelegramSync } from "@/lib/auth/admin-api";
 
 export const maxDuration = 300;
 
-function syncSecretMismatch(req: NextRequest): boolean {
-  const secret = process.env.TELEGRAM_SYNC_SECRET?.trim();
-  if (!secret) return false;
-  const auth = req.headers.get("authorization");
-  return auth !== `Bearer ${secret}`;
-}
-
-/**
- * POST: зтягує дописи з Telegram у Supabase (інкрементально, якщо БД уже заповнена).
- */
 export async function POST(req: NextRequest) {
   if (!isSupabaseConfigured()) {
     return NextResponse.json(
@@ -28,8 +19,10 @@ export async function POST(req: NextRequest) {
       { status: 503 },
     );
   }
-  if (syncSecretMismatch(req)) {
-    return NextResponse.json({ ok: false, error: "Unauthorized" }, { status: 401 });
+  if (!(await canPostTelegramSync(req))) {
+    return NextResponse.json({ ok: false, error: "Unauthorized" }, {
+      status: 401,
+    });
   }
 
   try {

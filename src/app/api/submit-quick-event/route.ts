@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  isValidUaQuickSubmitPhone,
-} from "@/lib/ua-quick-submit-phone";
-
+import { isValidUaQuickSubmitPhone } from "@/lib/ua-quick-submit-phone";
+import { getAdminActorFromCookies } from "@/lib/auth/admin-api";
 const MAX = {
   title: 220,
   city: 120,
@@ -89,6 +87,17 @@ async function sendQuickSubmitTelegramMessage(
 }
 
 export async function POST(req: NextRequest) {
+  const admin = await getAdminActorFromCookies();
+  if (!admin) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "Потрібен вхід адміністратора.",
+      },
+      { status: 401 },
+    );
+  }
+
   const token = process.env.TELEGRAM_QUICK_SUBMIT_BOT_TOKEN?.trim();
   const chatEnv = process.env.TELEGRAM_QUICK_SUBMIT_CHAT_ID?.trim();
 

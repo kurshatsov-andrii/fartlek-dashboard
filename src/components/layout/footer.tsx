@@ -81,26 +81,14 @@ export function Footer() {
 
           <div>
             <div className="text-xs font-mono uppercase tracking-widest text-white/40 mb-3">
-              Для організаторів
+              Розробникам
             </div>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="#admin" className="hover:text-neon transition-colors">
-                  Додати подію
-                </a>
-              </li>
-              <li>
-                <a href="#admin" className="hover:text-neon transition-colors">
-                  Тариф · 100 ₴
-                </a>
-              </li>
-              <li>
-                <a href="#admin" className="hover:text-neon transition-colors">
-                  Імпорт із Telegram
-                </a>
-              </li>
-              <li>
-                <a href="/api/telegram" className="hover:text-neon transition-colors">
+                <a
+                  href="/api/telegram"
+                  className="hover:text-neon transition-colors"
+                >
                   Публічне API
                 </a>
               </li>
