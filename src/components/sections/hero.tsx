@@ -1,8 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Activity, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Activity,
+  CalendarPlus,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FartlekTelegramChannelLink } from "@/components/ui/fartlek-telegram-channel-link";
 import { CountdownTimer } from "@/components/widgets/countdown-timer";
 import type { SportEvent } from "@/types";
 
@@ -60,9 +66,9 @@ export function Hero({ nextEvent, totalEvents, citiesCount }: HeroProps) {
               className="mt-5 max-w-xl mx-auto lg:mx-0 text-base md:text-lg text-white/70"
             >
               Найкращий дашборд спортивних подій України за даними дописів з
-              Telegram каналу @fartlekua: забіги, трейли, велоподії, плавання,
-              триатлони та триатлон-спільні формати — знайдіть свою подію разом
-              із біговою спільнотою.
+              Telegram каналу <FartlekTelegramChannelLink />: забіги, трейли,
+              велоподії, плавання, триатлони та триатлон-спільні формати —
+              знайдіть свою подію разом із біговою спільнотою.
             </motion.p>
 
             <motion.div
@@ -81,6 +87,18 @@ export function Hero({ nextEvent, totalEvents, citiesCount }: HeroProps) {
               >
                 Переглянути події
                 <ArrowRight className="h-4 w-4" />
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                onClick={() => {
+                  document
+                    .getElementById("quick-add-event")
+                    ?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
+                <CalendarPlus className="h-4 w-4" />
+                Додати подію
               </Button>
             </motion.div>
 

@@ -1,6 +1,8 @@
 "use client";
 
-import { Flame, Github, Send, Twitter } from "lucide-react";
+import Link from "next/link";
+import { Flame } from "lucide-react";
+import { FartlekSocialIconButtons } from "@/components/layout/fartlek-social-icon-buttons";
 
 export function Footer() {
   return (
@@ -22,32 +24,10 @@ export function Footer() {
             <p className="text-sm text-white/55 max-w-sm">
               Дім українських спортивних подій. Відкривайте, змагайтеся та
               розвивайте спільноту бігунів, велосипедистів, плавців і
-              триатлоністів.
+              триатлетів.
             </p>
-            <div className="mt-4 flex items-center gap-2">
-              <a
-                href="https://t.me/fartlekua"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="h-9 w-9 grid place-items-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors"
-                aria-label="Telegram"
-              >
-                <Send className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                className="h-9 w-9 grid place-items-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors"
-                aria-label="Twitter"
-              >
-                <Twitter className="h-4 w-4" />
-              </a>
-              <a
-                href="#"
-                className="h-9 w-9 grid place-items-center rounded-full bg-white/5 border border-white/10 hover:border-neon/40 hover:bg-neon/10 transition-colors"
-                aria-label="GitHub"
-              >
-                <Github className="h-4 w-4" />
-              </a>
+            <div className="mt-4">
+              <FartlekSocialIconButtons />
             </div>
           </div>
 
@@ -75,6 +55,14 @@ export function Footer() {
                 <a href="#top" className="hover:text-neon transition-colors">
                   Топ та рейтинги
                 </a>
+              </li>
+              <li>
+                <Link
+                  href="/contacts"
+                  className="hover:text-neon transition-colors"
+                >
+                  Контакти
+                </Link>
               </li>
             </ul>
           </div>

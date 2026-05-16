@@ -2,13 +2,53 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { Bot, Loader2, Send } from "lucide-react";
+import {
+  Backpack,
+  Bot,
+  CalendarDays,
+  Gauge,
+  Loader2,
+  Send,
+  Utensils,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type ChatRole = "user" | "assistant";
 
 export type ChatTurn = { role: ChatRole; content: string };
+
+const QUICK_PROMPTS: {
+  id: string;
+  label: string;
+  icon: typeof CalendarDays;
+  text: string;
+}[] = [
+  {
+    id: "runs",
+    label: "Список забігів",
+    icon: CalendarDays,
+    text: "Порадь старти з календаря Fartlek, які могли б підійти.",
+  },
+  {
+    id: "pace",
+    label: "Темп і час",
+    icon: Gauge,
+    text: "Допоможи розрахувати темп і орієнтовний час на дистанції.",
+  },
+  {
+    id: "nutrition",
+    label: "Харчування",
+    icon: Utensils,
+    text: "Харчування для забігів (перед стартом і на дистанції).",
+  },
+  {
+    id: "gear",
+    label: "Спорядження",
+    icon: Backpack,
+    text: "Спорядження для забігу або трейлу.",
+  },
+];
 
 function AssistantMarkdown({ source }: { source: string }) {
   return (
@@ -60,41 +100,44 @@ export function FartlekAssistantChat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading, error]);
 
-  const send = useCallback(async () => {
-    const text = input.trim();
-    if (!text || loading) return;
+  const send = useCallback(
+    async (preset?: string) => {
+      const text = (preset ?? input).trim();
+      if (!text || loading) return;
 
-    setInput("");
-    setError(null);
-    const next: ChatTurn[] = [...messages, { role: "user", content: text }];
-    setMessages(next);
-    setLoading(true);
+      setInput("");
+      setError(null);
+      const next: ChatTurn[] = [...messages, { role: "user", content: text }];
+      setMessages(next);
+      setLoading(true);
 
-    try {
-      const res = await fetch("/api/assistant/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: next,
-          clientOrigin:
-            typeof window !== "undefined" ? window.location.origin : undefined,
-        }),
-      });
-      const data = (await res.json()) as { message?: string; error?: string };
+      try {
+        const res = await fetch("/api/assistant/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: next,
+            clientOrigin:
+              typeof window !== "undefined" ? window.location.origin : undefined,
+          }),
+        });
+        const data = (await res.json()) as { message?: string; error?: string };
 
-      if (!res.ok) {
-        setError(data.error ?? "Помилка сервера.");
-        return;
+        if (!res.ok) {
+          setError(data.error ?? "Помилка сервера.");
+          return;
+        }
+
+        const reply = (data.message ?? "").trim();
+        setMessages([...next, { role: "assistant", content: reply || "…" }]);
+      } catch {
+        setError("Не вдалося надіслати повідомлення. Перевірте з’єднання.");
+      } finally {
+        setLoading(false);
       }
-
-      const reply = (data.message ?? "").trim();
-      setMessages([...next, { role: "assistant", content: reply || "…" }]);
-    } catch {
-      setError("Не вдалося надіслати повідомлення. Перевірте з’єднання.");
-    } finally {
-      setLoading(false);
-    }
-  }, [input, loading, messages]);
+    },
+    [input, loading, messages],
+  );
 
   const onKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -122,9 +165,9 @@ export function FartlekAssistantChat() {
       <div className="flex-1 overflow-y-auto py-4 space-y-4 pr-1 min-h-[200px]">
         {messages.length === 0 && !loading && (
           <p className="text-sm text-white/55 leading-relaxed">
-            Запитайте про темп, трейл, одяг на погоду, харчування перед стартом або
-            як знайти подію в календарі Fartlek. Не надаю медичних діагнозів і не обговорюю
-            теми поза спортом.
+            Нижче — швидкі питання, або впишіть свій текст. Спочатку консультують із
+            коротких уточнень про дистанцію/місто/умови, потім підкажуть по календарю,
+            темпу, харчуванню чи спорядженню (без медичних діагнозів і тем поза спортом).
           </p>
         )}
 
@@ -149,7 +192,8 @@ export function FartlekAssistantChat() {
               ) : (
                 m.content
               )}
-            </div>          </div>
+            </div>
+          </div>
         ))}
 
         {loading && (
@@ -173,38 +217,70 @@ export function FartlekAssistantChat() {
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-2 sm:items-end shrink-0 pt-2 border-t border-white/10">
-        <label className="sr-only" htmlFor="fartlek-assistant-input">
-          Повідомлення асистенту
-        </label>
-        <textarea
-          id="fartlek-assistant-input"
-          rows={3}
-          value={input}
-          disabled={loading}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={onKeyDown}
-          placeholder="Напишіть запит… (Enter — надіслати, Shift+Enter — новий рядок)"
-          className={cn(
-            "flex-1 w-full min-h-[88px] rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white",
-            "placeholder:text-white/35 resize-y focus:outline-none focus:ring-2 focus:ring-neon/40 focus:border-neon/55",
-            loading && "opacity-60 cursor-not-allowed",
-          )}
-        />
-        <Button
-          type="button"
-          size="lg"
-          className="sm:self-stretch sm:min-w-[120px]"
-          onClick={() => void send()}
-          disabled={loading || !input.trim()}
-        >
-          {loading ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
-          ) : (
-            <Send className="h-5 w-5" />
-          )}
-          Надіслати
-        </Button>
+      <div className="flex flex-col shrink-0 pt-3 space-y-3 border-t border-white/10">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-white/40 mb-2">
+            Швидкі питання
+          </p>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="Швидкі питання">
+            {QUICK_PROMPTS.map((q) => {
+              const Icon = q.icon;
+              return (
+                <button
+                  key={q.id}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => void send(q.text)}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 rounded-full px-3 py-2 text-xs font-medium",
+                    "bg-white/[0.06] border border-white/12 text-white/90",
+                    "hover:bg-neon/[0.12] hover:border-neon/35 transition-colors",
+                    "touch-manipulation min-h-[40px]",
+                    loading && "opacity-45 cursor-not-allowed pointer-events-none",
+                  )}
+                  aria-label={q.label}
+                >
+                  <Icon className="h-3.5 w-3.5 shrink-0 text-neon" aria-hidden />
+                  {q.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2 sm:items-end">
+          <label className="sr-only" htmlFor="fartlek-assistant-input">
+            Повідомлення асистенту
+          </label>
+          <textarea
+            id="fartlek-assistant-input"
+            rows={3}
+            value={input}
+            disabled={loading}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={onKeyDown}
+            placeholder="Напишіть запит… (Enter — надіслати, Shift+Enter — новий рядок)"
+            className={cn(
+              "flex-1 w-full min-h-[88px] rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white",
+              "placeholder:text-white/35 resize-y focus:outline-none focus:ring-2 focus:ring-neon/40 focus:border-neon/55",
+              loading && "opacity-60 cursor-not-allowed",
+            )}
+          />
+          <Button
+            type="button"
+            size="lg"
+            className="sm:self-stretch sm:min-w-[120px]"
+            onClick={() => void send()}
+            disabled={loading || !input.trim()}
+          >
+            {loading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              <Send className="h-5 w-5" />
+            )}
+            Надіслати
+          </Button>
+        </div>
       </div>
     </div>
   );

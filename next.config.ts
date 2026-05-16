@@ -13,9 +13,8 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "cdn5.telesco.pe" },
     ],
   },
-  experimental: {
-    optimizePackageImports: ["lucide-react"],
-  },
+  // NB: optimizePackageImports для lucide у девелі з webpack інколи давав помилку
+  // "__webpack_modules__[moduleId] is not a function" після гарячої перебудови чанків.
 };
 
 export default nextConfig;

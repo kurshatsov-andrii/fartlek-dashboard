@@ -9,6 +9,7 @@ import { categoryLabel } from "@/lib/analytics";
 import { formatEventDate, fromNow } from "@/lib/date";
 import { sortDistancesDisplayLine } from "@/lib/distance-sort";
 import { organizerLatinInitials } from "@/lib/organizer-initials";
+import { FARTLEK_PUBLIC_TELEGRAM_URL } from "@/lib/fartlek-telegram-public";
 import { compactNumber } from "@/lib/utils";
 import { StatusBadge } from "./status-badge";
 import { CategoryIcon } from "./category-icon";
@@ -33,7 +34,7 @@ export function EventCard({ event }: EventCardProps) {
           originalSrc={event.image}
           alternateSrcs={event.imageAlternates}
           alt={event.title}
-          titleHint="Фото прев'ю з поста в Telegram @fartlekua"
+          titleHint={`Фото прев'ю з поста в Telegram ${FARTLEK_PUBLIC_TELEGRAM_URL}`}
           loading="lazy"
           className="absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
         />

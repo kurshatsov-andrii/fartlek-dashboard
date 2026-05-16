@@ -9,9 +9,14 @@ import { MapSection } from "@/components/sections/map-section";
 import { TopEventsSection } from "@/components/sections/top-events-section";
 import { OrganizersSection } from "@/components/sections/organizers-section";
 import { FavoritesSection } from "@/components/sections/favorites-section";
+import { QuickSubmitSection } from "@/components/sections/quick-submit-section";
 import { computeStats } from "@/lib/analytics";
 import { fetchTelegramDashboard } from "@/lib/telegram-dashboard-cache";
 import { sportEventAbsoluteUrl } from "@/lib/event-detail";
+import {
+  FARTLEK_PUBLIC_TELEGRAM_HANDLE,
+  FARTLEK_PUBLIC_TELEGRAM_URL,
+} from "@/lib/fartlek-telegram-public";
 
 export const revalidate = 600;
 
@@ -45,7 +50,7 @@ export default async function HomePage() {
     "@type": "ItemList",
     name: "Fartlek Події 2026",
     description:
-      "Спортивні події України за даними дописів Telegram каналу @fartlekua.",
+      `Спортивні події України за даними дописів Telegram каналу ${FARTLEK_PUBLIC_TELEGRAM_URL} (${FARTLEK_PUBLIC_TELEGRAM_HANDLE}).`,
     numberOfItems: EVENTS.length,
     itemListElement: UPCOMING_EVENTS.slice(0, 10).map((e, idx) => ({
       "@type": "ListItem",
@@ -80,6 +85,7 @@ export default async function HomePage() {
         <MapSection events={EVENTS} />
         <TopEventsSection events={EVENTS} upcoming={UPCOMING_EVENTS} />
         <OrganizersSection organizers={organizers} events={EVENTS} />
+        <QuickSubmitSection />
         <FavoritesSection events={EVENTS} />
       </main>
       <Footer />

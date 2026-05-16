@@ -18,11 +18,15 @@
 
 import type { ParsedEventFromTelegram, TelegramPost } from "@/types";
 import { UKRAINE_CITIES } from "@/data/cities";
+import { FARTLEK_PUBLIC_TELEGRAM_URL } from "@/lib/fartlek-telegram-public";
 
 export const TELEGRAM_CHANNEL = {
   username: "fartlekua",
-  url: "https://t.me/fartlekua",
-  previewUrl: "https://t.me/s/fartlekua",
+  url: FARTLEK_PUBLIC_TELEGRAM_URL,
+  previewUrl: FARTLEK_PUBLIC_TELEGRAM_URL.replace(
+    "https://t.me/",
+    "https://t.me/s/",
+  ),
   displayName: "Фартлек 🇺🇦 Спортівенти",
   description:
     "Афіша спортивних івентів в Україні: біг, велоспорт, плавання, триатлон, дуатлон, акватлон, трейл, OCR, орієнтування.",

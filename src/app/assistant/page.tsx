@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import { MobileBottomNav } from "@/components/layout/mobile-bottom-nav";
-import { FartlekAssistantChat } from "@/components/assistant/fartlek-assistant-chat";
+import { AssistantChatClientShell } from "@/components/assistant/assistant-chat-client-shell";
 import { ArrowLeft } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -31,7 +31,7 @@ export default function AssistantPage() {
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden />
             На головну
           </Link>
-          <FartlekAssistantChat />
+          <AssistantChatClientShell />
         </div>
       </main>
       <Footer />

@@ -12,6 +12,7 @@ import {
   eventCoverImageUrl,
   eventImagePreferPostBody,
 } from "@/lib/event-image";
+import { FARTLEK_PUBLIC_TELEGRAM_URL } from "@/lib/fartlek-telegram-public";
 import { cn } from "@/lib/utils";
 
 type EventCoverImageProps = {
@@ -34,7 +35,7 @@ export function EventCoverImage({
   originalSrc,
   alternateSrcs,
   alt,
-  titleHint = "Фото з Telegram-каналу @fartlekua",
+  titleHint = `Фото з Telegram-каналу ${FARTLEK_PUBLIC_TELEGRAM_URL}`,
   className,
   loading = "lazy",
 }: EventCoverImageProps) {

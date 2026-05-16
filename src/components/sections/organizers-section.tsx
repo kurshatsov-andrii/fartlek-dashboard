@@ -6,6 +6,10 @@ import { motion } from "framer-motion";
 import { CheckCircle2, ChevronDown, MapPin, Star } from "lucide-react";
 import { SectionHeader } from "./stats-section";
 import { Badge } from "@/components/ui/badge";
+import {
+  FartlekTelegramChannelLink,
+  fragmentsWithFartlekTelegramHandle,
+} from "@/components/ui/fartlek-telegram-channel-link";
 import { categoryLabel } from "@/lib/analytics";
 import { formatEventDate } from "@/lib/date";
 import { sportEventPagePath } from "@/lib/event-detail";
@@ -60,7 +64,13 @@ export function OrganizersSection({
         <SectionHeader
           eyebrow="Спільнота"
           title="Топ організатори"
-          description="Імена та міста з тексту дописів Telegram (@fartlekua), згруповані за описом організатора події."
+          description={
+            <>
+              Імена та міста з тексту дописів Telegram (
+              <FartlekTelegramChannelLink />), згруповані за описом організатора
+              події.
+            </>
+          }
         />
 
         <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -94,7 +104,7 @@ export function OrganizersSection({
                   {o.name}
                 </h3>
                 <p className="mt-1 text-xs text-white/55 line-clamp-2">
-                  {o.bio}
+                  {fragmentsWithFartlekTelegramHandle(o.bio)}
                 </p>
                 <div className="mt-3 flex items-center justify-center gap-3 text-[11px] text-white/65">
                   <span className="inline-flex items-center gap-1">

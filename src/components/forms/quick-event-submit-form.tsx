@@ -10,11 +10,21 @@ import {
   formatUaQuickSubmitPhone,
   isValidUaQuickSubmitPhone,
 } from "@/lib/ua-quick-submit-phone";
+import { WAYFORPAY_EVENT_PUBLISH_BUTTON_URL } from "@/lib/wayforpay-publish";
+import { EVENT_PRICE_UAH, formatUAH } from "@/lib/utils";
 
 const textareaClass =
   "min-h-[100px] w-full rounded-2xl bg-white/5 border border-white/10 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-neon/40 focus:border-neon/60 transition-all resize-y";
 
-export function QuickEventSubmitForm() {
+export function QuickEventSubmitForm({
+  variant = "withPaymentAside",
+}: {
+  /**
+   * `withPaymentAside` — текст для головної (платіжний блок поруч).
+   * `compact` — тільки форма з посиланням на Wayforpay (напр. адмін-дошка).
+   */
+  variant?: "withPaymentAside" | "compact";
+}) {
   const [phone, setPhone] = useState("+380");
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "err">(
     "idle",
@@ -188,9 +198,28 @@ export function QuickEventSubmitForm() {
           </p>
         )}
 
-        <p className="text-[11px] text-white/40 text-center mt-1">
-          100 ₴ за публікацію — оплата після підтвердження.
-        </p>
+        {(variant === "withPaymentAside" ? (
+          <p className="text-[11px] text-white/45 text-center mt-1 leading-relaxed">
+            Спочатку натисніть «Сплатити… Wayforpay» у блоці поруч із формою (на телефоні —
+            платіж знаходиться вище). Після оплати ми перевіримо заявку та опублікуємо старт у
+            каналі й на сайті.
+          </p>
+        ) : (
+          <div className="text-[11px] text-white/45 text-center mt-1 space-y-2 leading-relaxed">
+            <p>
+              Послуга {formatUAH(EVENT_PRICE_UAH)} — перед обробкою заявки пройдіть оплату
+              на Wayforpay.
+            </p>
+            <a
+              href={WAYFORPAY_EVENT_PUBLISH_BUTTON_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex font-semibold text-neon hover:text-neon-400 underline-offset-4 hover:underline"
+            >
+              Сплатити {formatUAH(EVENT_PRICE_UAH)} — Wayforpay
+            </a>
+          </div>
+        ))}
       </form>
     </motion.div>
   );

@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   Building2,
@@ -149,9 +150,9 @@ export function SectionHeader({
 }: {
   eyebrow?: string;
   title: string;
-  description?: string;
+  description?: ReactNode;
   align?: "left" | "center";
-  action?: React.ReactNode;
+  action?: ReactNode;
 }) {
   return (
     <div

@@ -24,6 +24,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    {
+      url: `${base}/tools/pace`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.75,
+    },
+    {
+      url: `${base}/contacts`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.72,
+    },
   ];
 
   let eventUrls: MetadataRoute.Sitemap = [];

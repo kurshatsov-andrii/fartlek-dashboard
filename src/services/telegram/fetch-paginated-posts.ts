@@ -7,8 +7,7 @@ const MAX_PAGES = 100;
 const FETCH_GAP_MS = 280;
 
 const PREVIEW_FETCH_HEADERS = {
-  "User-Agent":
-    "Mozilla/5.0 (compatible; FartlekEventsDashboard/1.2; +https://t.me/fartlekua)",
+  "User-Agent": `Mozilla/5.0 (compatible; FartlekEventsDashboard/1.2; +${TELEGRAM_CHANNEL.url})`,
   Accept: "text/html,application/xhtml+xml",
 } as const;
 

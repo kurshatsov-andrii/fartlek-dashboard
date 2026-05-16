@@ -9,6 +9,7 @@ import {
   ArrowLeft,
   Bot,
   Flame,
+  Gauge,
   Heart,
   Menu,
   Search as SearchIcon,
@@ -18,14 +19,27 @@ import {
 import { cn } from "@/lib/utils";
 import { useFavorites } from "@/components/providers/favorites-provider";
 
-/** Секції публічного сайту (`/#…`). */
-const USER_SITE_NAV = [
-  { hash: "#events", label: "Події" },
-  { hash: "#calendar", label: "Календар" },
-  { hash: "#map", label: "Карта" },
-  { hash: "#top", label: "Топ" },
-] as const;
+/** Секції головної (`/#…`) або окремий маршрут публічного сайту. */
+type VisitorSiteNavItem =
+  | { readonly kind: "hash"; readonly hash: string; readonly label: string }
+  | { readonly kind: "href"; readonly href: string; readonly label: string };
 
+const VISITOR_SITE_NAV: readonly VisitorSiteNavItem[] = [
+  { kind: "hash", hash: "#events", label: "Події" },
+  { kind: "hash", hash: "#calendar", label: "Календар" },
+  { kind: "hash", hash: "#map", label: "Карта" },
+  { kind: "hash", hash: "#top", label: "Топ" },
+  { kind: "hash", hash: "#quick-add-event", label: "Додати подію" },
+  { kind: "href", href: "/contacts", label: "Контакти" },
+];
+
+function visitorSiteNavHref(item: VisitorSiteNavItem): string {
+  return item.kind === "href" ? item.href : userSiteHref(item.hash);
+}
+
+function visitorSiteNavKey(item: VisitorSiteNavItem): string {
+  return item.kind === "href" ? item.href : item.hash;
+}
 /** Якорі всередині `/admin`. */
 const ADMIN_PANEL_NAV = [
   { id: "admin-dashboard", label: "Дашборд" },
@@ -87,8 +101,12 @@ export function Navbar() {
     });
   };
 
-  const userSiteNavClick = (hash: string) => (e: React.MouseEvent) => {
-    if (scrollToHomeSection(hash)) e.preventDefault();
+  const visitorSiteNavClick = (item: VisitorSiteNavItem) => (
+    e: React.MouseEvent<HTMLAnchorElement>,
+  ) => {
+    if (item.kind === "hash") {
+      if (scrollToHomeSection(item.hash)) e.preventDefault();
+    }
     setMobileOpen(false);
   };
 
@@ -185,11 +203,11 @@ export function Navbar() {
               Перегляд сайту (користувач)
             </div>
             <div className="flex flex-col gap-0.5">
-              {USER_SITE_NAV.map((item) => (
+              {VISITOR_SITE_NAV.map((item) => (
                 <Link
-                  key={`m-site-${item.hash}`}
-                  href={userSiteHref(item.hash)}
-                  onClick={userSiteNavClick(item.hash)}
+                  key={`m-site-${visitorSiteNavKey(item)}`}
+                  href={visitorSiteNavHref(item)}
+                  onClick={visitorSiteNavClick(item)}
                   className="px-4 py-3 rounded-xl text-sm text-white/85 hover:text-white hover:bg-white/5 active:bg-white/10 min-h-[44px] flex items-center"
                 >
                   {item.label}
@@ -202,6 +220,14 @@ export function Navbar() {
               >
                 <Bot className="h-4 w-4 text-neon shrink-0" aria-hidden />
                 Fartlek AI
+              </Link>
+              <Link
+                href="/tools/pace"
+                onClick={() => setMobileOpen(false)}
+                className="px-4 py-3 rounded-xl text-sm text-white/85 hover:text-white hover:bg-neon/10 border border-white/5 hover:border-neon/25 active:bg-neon/15 min-h-[44px] flex items-center gap-2"
+              >
+                <Gauge className="h-4 w-4 text-neon shrink-0" aria-hidden />
+                Калькулятор темпу
               </Link>
             </div>
             <div className="h-px bg-white/10" />
@@ -223,11 +249,11 @@ export function Navbar() {
           </>
         ) : (
           <>
-            {USER_SITE_NAV.map((item) => (
+            {VISITOR_SITE_NAV.map((item) => (
               <Link
-                key={item.hash}
-                href={userSiteHref(item.hash)}
-                onClick={userSiteNavClick(item.hash)}
+                key={visitorSiteNavKey(item)}
+                href={visitorSiteNavHref(item)}
+                onClick={visitorSiteNavClick(item)}
                 className="px-4 py-3 rounded-xl text-sm text-white/85 hover:text-white hover:bg-white/5 active:bg-white/10 min-h-[44px] flex items-center"
               >
                 {item.label}
@@ -240,6 +266,14 @@ export function Navbar() {
             >
               <Bot className="h-4 w-4 text-neon shrink-0" aria-hidden />
               Fartlek AI
+            </Link>
+            <Link
+              href="/tools/pace"
+              onClick={() => setMobileOpen(false)}
+              className="px-4 py-3 rounded-xl text-sm text-white/85 hover:text-white hover:bg-neon/10 border border-white/5 hover:border-neon/25 active:bg-neon/15 min-h-[44px] flex items-center gap-2"
+            >
+              <Gauge className="h-4 w-4 text-neon shrink-0" aria-hidden />
+              Калькулятор темпу
             </Link>
           </>
         )}
@@ -330,11 +364,11 @@ export function Navbar() {
           {isAdminDashboard ? (
             <nav className="hidden lg:flex items-center gap-1 xl:gap-1.5 min-w-0 flex-1 justify-center overflow-x-auto no-scrollbar [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <span className={adminNavGroupClass}>Сайт</span>
-              {USER_SITE_NAV.map((item) => (
+              {VISITOR_SITE_NAV.map((item) => (
                 <Link
-                  key={`site-${item.hash}`}
-                  href={userSiteHref(item.hash)}
-                  onClick={userSiteNavClick(item.hash)}
+                  key={`site-${visitorSiteNavKey(item)}`}
+                  href={visitorSiteNavHref(item)}
+                  onClick={visitorSiteNavClick(item)}
                   className={navMuted}
                 >
                   {item.label}
@@ -346,6 +380,13 @@ export function Navbar() {
               >
                 <Bot className="h-3.5 w-3.5 text-neon shrink-0" aria-hidden />
                 AI
+              </Link>
+              <Link
+                href="/tools/pace"
+                className={cn(navMuted, "inline-flex items-center gap-1.5")}
+              >
+                <Gauge className="h-3.5 w-3.5 text-neon shrink-0" aria-hidden />
+                Темп
               </Link>
               <span className="w-px h-4 bg-white/15 shrink-0 mx-0.5" aria-hidden />
               <span className={adminNavGroupClass}>Адмін</span>
@@ -362,11 +403,11 @@ export function Navbar() {
             </nav>
           ) : (
             <nav className="hidden lg:flex items-center gap-1">
-              {USER_SITE_NAV.map((item) => (
+              {VISITOR_SITE_NAV.map((item) => (
                 <Link
-                  key={item.hash}
-                  href={userSiteHref(item.hash)}
-                  onClick={userSiteNavClick(item.hash)}
+                  key={visitorSiteNavKey(item)}
+                  href={visitorSiteNavHref(item)}
+                  onClick={visitorSiteNavClick(item)}
                   className={cn(navMuted, "px-3")}
                 >
                   {item.label}
@@ -381,6 +422,16 @@ export function Navbar() {
               >
                 <Bot className="h-3.5 w-3.5 text-neon shrink-0" aria-hidden />
                 AI
+              </Link>
+              <Link
+                href="/tools/pace"
+                className={cn(
+                  navMuted,
+                  "px-3 inline-flex items-center gap-1.5",
+                )}
+              >
+                <Gauge className="h-3.5 w-3.5 text-neon shrink-0" aria-hidden />
+                Темп
               </Link>
             </nav>
           )}

@@ -44,6 +44,7 @@ import { sportEventPagePath } from "@/lib/event-detail";
 import type { ImportLogEntry, SportEvent } from "@/types";
 import { TELEGRAM_CHANNEL } from "@/services/telegram";
 import { QuickEventSubmitForm } from "@/components/forms/quick-event-submit-form";
+import { FartlekTelegramChannelLink } from "@/components/ui/fartlek-telegram-channel-link";
 
 /** Для сортування «останніх з Telegram»: час допису, інакше номер допису. */
 function telegramRecencyKey(e: SportEvent): number {
@@ -283,7 +284,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                 <div className="rounded-xl bg-white/[0.03] border border-white/5 p-4 text-xs font-mono text-white/70 flex flex-col justify-center min-h-[100px] shrink-0">
                   <div className="flex items-center gap-2">
                     <Sparkles className="h-3.5 w-3.5 text-neon shrink-0" />
-                    <span>@{TELEGRAM_CHANNEL.username}</span>
+                    <FartlekTelegramChannelLink className="font-mono font-normal" />
                   </div>
                   <div className="mt-3 text-white/40 leading-relaxed">
                     Авто-синхронізація що 10 хв · {lastSync ?? "очікування"}
@@ -409,7 +410,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
           id="quick-add-event"
           className="mt-10 lg:mt-14 scroll-mt-28 md:scroll-mt-32"
         >
-          <QuickEventSubmitForm />
+          <QuickEventSubmitForm variant="compact" />
         </div>
       </div>
     </section>
