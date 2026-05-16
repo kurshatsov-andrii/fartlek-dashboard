@@ -7,6 +7,10 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    /**
+     * Публічний проксі обкладинок: без Supabase session на кожен thumbnail,
+     * інакше на Vercel легко отримувати обриви/повільні відповіді.
+     */
+    "/((?!_next/static|_next/image|favicon.ico|api/event-image|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

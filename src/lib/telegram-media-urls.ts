@@ -6,6 +6,7 @@
 import type { TelegramPost } from "@/types";
 import { TG_TEXT_URL_REGEX } from "@/services/telegram/parser";
 import { EVENT_COVER_FALLBACK } from "@/lib/event-image";
+import { isTelegramCdnHostname } from "@/lib/telegram-cdn-hostname";
 
 export function normalizeTelegramAssetUrl(raw: string): string | null {
   const t = raw.trim().replace(/^\/\//, "https://");
@@ -31,8 +32,7 @@ export function isDirectTelegramImageUrl(httpsUrl: string): boolean {
     const u = new URL(httpsUrl);
     const h = u.hostname.toLowerCase();
     if (h === "telegraph.controller.bot") return /\/file\//i.test(u.pathname);
-    if (/\.telesco\.pe$/i.test(h) || /\.cdn-telegram\.org$/i.test(h))
-      return true;
+    if (isTelegramCdnHostname(h)) return true;
     return /\.(jpe?g|png|gif|webp|avif)(\?|#|$)/i.test(u.pathname);
   } catch {
     return false;
@@ -46,7 +46,7 @@ export function acceptsParserExtractedMediaUrl(httpsUrl: string): boolean {
   try {
     const u = new URL(httpsUrl);
     const h = u.hostname.toLowerCase();
-    if (/\.telesco\.pe$/i.test(h) || /\.cdn-telegram\.org$/i.test(h)) return true;
+    if (isTelegramCdnHostname(h)) return true;
     if (h === "telegraph.controller.bot")
       return /\/file\//i.test(u.pathname);
     return /\.(jpe?g|png|gif|webp|avif)(\?|#|$)/i.test(u.pathname);
@@ -72,8 +72,7 @@ function shouldExcludeDecorEmojiUrl(urlNorm: string): boolean {
     const slugRaw = fileMatch?.[1] ?? "";
     const slugCore = slugRaw.replace(/\.(jpe?g|webp|png|gif|avif)$/i, "");
 
-    const cdnMess =
-      /\.telesco\.pe$/i.test(h) || /\.cdn-telegram\.org$/i.test(h);
+    const cdnMess = isTelegramCdnHostname(h);
     if (cdnMess && slugCore.length <= 72 && urlNorm.length < 260) return true;
 
     /** Дуже короткі webp/png на CDN — рідко афішне фото поста */
@@ -86,8 +85,7 @@ function shouldExcludeDecorEmojiUrl(urlNorm: string): boolean {
 }
 
 function isTelegramCdnPosterHost(hostname: string): boolean {
-  const h = hostname.toLowerCase();
-  return /\.telesco\.pe$/i.test(h) || /\.cdn-telegram\.org$/i.test(h);
+  return isTelegramCdnHostname(hostname);
 }
 
 /**
@@ -184,6 +182,8 @@ export function extractTelegramCdnUrlsFromHtml(html: string): string[] {
     if (/cdn\d*\.telesco\.pe/i.test(v)) push(v.replace(/^\/\//, "https:"));
     if (/cdn\d*\.cdn-telegram\.org/i.test(v))
       push(v.replace(/^\/\//, "https:"));
+    if (/cdn\.telegram\.org\b/i.test(v))
+      push(v.replace(/^\/\//, "https:"));
     if (v.includes("telegraph.controller.bot") && /\/file\//i.test(v))
       push(v.startsWith("//") ? `https:${v}` : v);
   }
@@ -191,6 +191,8 @@ export function extractTelegramCdnUrlsFromHtml(html: string): string[] {
     const v = mm[1];
     if (/cdn\d*\.telesco\.pe/i.test(v)) push(v.replace(/^\/\//, "https:"));
     if (/cdn\d*\.cdn-telegram\.org/i.test(v))
+      push(v.replace(/^\/\//, "https:"));
+    if (/cdn\.telegram\.org\b/i.test(v))
       push(v.replace(/^\/\//, "https:"));
     if (v.includes("telegraph.controller.bot"))
       push(v.startsWith("//") ? `https:${v}` : v);
@@ -202,6 +204,11 @@ export function extractTelegramCdnUrlsFromHtml(html: string): string[] {
   }
   for (const mm of html.matchAll(
     /https?:\/\/cdn\d+\.telesco\.pe\/[^\s"'>)]+/gi,
+  )) {
+    push(mm[0]);
+  }
+  for (const mm of html.matchAll(
+    /https?:\/\/cdn\.telegram\.org\/[^\s"'>)]+/gi,
   )) {
     push(mm[0]);
   }

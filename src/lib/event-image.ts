@@ -1,3 +1,5 @@
+import { isTelegramCdnHostname } from "@/lib/telegram-cdn-hostname";
+
 /**
  * Локальний плейсхолдер, якщо в поста немає прев'ю (не стокові фото).
  */
@@ -6,10 +8,7 @@ export const EVENT_COVER_FALLBACK = "/telegram-channel-cover.svg";
 const PROXIED_HOSTS = new Set(["telegraph.controller.bot"]);
 
 function shouldProxyTelegramMedia(hostname: string): boolean {
-  return (
-    /\.telesco\.pe$/i.test(hostname) ||
-    /\.cdn-telegram\.org$/i.test(hostname)
-  );
+  return isTelegramCdnHostname(hostname);
 }
 
 /**

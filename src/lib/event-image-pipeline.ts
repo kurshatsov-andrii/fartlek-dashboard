@@ -3,6 +3,7 @@ import {
   readEventImageCache,
   writeEventImageCache,
 } from "@/lib/event-image-cache";
+import { isTelegramCdnHostname } from "@/lib/telegram-cdn-hostname";
 import { TELEGRAM_CHANNEL } from "@/services/telegram/parser";
 
 const CHROME_UA =
@@ -10,9 +11,7 @@ const CHROME_UA =
 
 export function isAllowedImageHost(hostname: string): boolean {
   if (hostname === "telegraph.controller.bot") return true;
-  return (
-    /\.telesco\.pe$/i.test(hostname) || /\.cdn-telegram\.org$/i.test(hostname)
-  );
+  return isTelegramCdnHostname(hostname);
 }
 
 function bodyLooksLikeHtml(bytes: Uint8Array): boolean {
