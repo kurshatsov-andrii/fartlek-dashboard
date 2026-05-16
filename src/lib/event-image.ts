@@ -17,17 +17,29 @@ function shouldProxyTelegramMedia(hostname: string): boolean {
  */
 export const EVENT_IMAGE_PROXY_MAX_GET_CHARS = 2000;
 
-export function eventImagePreferPostBody(original: string): boolean {
-  const proxied = eventCoverImageUrl(original);
+export function eventImagePreferPostBody(
+  original: string,
+  telegramPostUrl?: string | null,
+): boolean {
+  const proxied = eventCoverImageUrl(original, telegramPostUrl);
   if (proxied === original) return false;
   return proxied.length >= EVENT_IMAGE_PROXY_MAX_GET_CHARS;
 }
 
-export function eventCoverImageUrl(original: string): string {
+/**
+ * `telegramPostUrl` — посилання на допис `https://t.me/channel/NNN`; якщо CDN-URL застарілий,
+ * сервер знімає превʼю з цієї сторінки й підставляє свіжий файлний URL.
+ */
+export function eventCoverImageUrl(
+  original: string,
+  telegramPostUrl?: string | null,
+): string {
   try {
     const u = new URL(original);
     if (PROXIED_HOSTS.has(u.hostname) || shouldProxyTelegramMedia(u.hostname)) {
-      return `/api/event-image?url=${encodeURIComponent(original)}`;
+      const tg = telegramPostUrl?.trim();
+      const telegramParam = tg ? `&telegramPost=${encodeURIComponent(tg)}` : "";
+      return `/api/event-image?url=${encodeURIComponent(original)}${telegramParam}`;
     }
   } catch {
     /* ignore */

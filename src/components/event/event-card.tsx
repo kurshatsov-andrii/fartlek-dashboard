@@ -32,6 +32,7 @@ export function EventCard({ event }: EventCardProps) {
       <div className="relative aspect-[16/10] overflow-hidden bg-ink-900">
         <EventCoverImage
           originalSrc={event.image}
+          telegramPostUrl={event.registrationLink}
           alternateSrcs={event.imageAlternates}
           alt={event.title}
           titleHint={`Фото прев'ю з поста в Telegram ${FARTLEK_PUBLIC_TELEGRAM_URL}`}

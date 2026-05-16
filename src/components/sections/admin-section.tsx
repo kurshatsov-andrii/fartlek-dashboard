@@ -374,6 +374,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                 >
                   <EventCoverImage
                     originalSrc={e.image}
+                    telegramPostUrl={e.registrationLink}
                     alt=""
                     loading="lazy"
                     className="h-11 w-11 md:h-12 md:w-12 rounded-lg object-cover shrink-0"

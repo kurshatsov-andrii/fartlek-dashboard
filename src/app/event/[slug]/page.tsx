@@ -102,6 +102,7 @@ export default async function EventAnalysisPage({
           <div className="relative w-full aspect-[16/7] min-h-[240px] sm:min-h-[280px] max-h-[min(70vh,640px)]">
             <EventCoverImage
               originalSrc={event.image}
+              telegramPostUrl={event.registrationLink}
               alternateSrcs={event.imageAlternates}
               alt={event.title}
               titleHint="Фото з допису в Telegram"

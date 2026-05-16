@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 
 type EventCoverImageProps = {
   originalSrc: string;
+  /** Наприклад `event.registrationLink` (`https://t.me/channel/NNN`) — для оновлення застарілого CDN-превʼю. */
+  telegramPostUrl?: string | null;
   alternateSrcs?: readonly string[];
   alt: string;
   /** Підказка при наведенні — звідки фото */
@@ -33,6 +35,7 @@ type EventCoverImageProps = {
  */
 export function EventCoverImage({
   originalSrc,
+  telegramPostUrl,
   alternateSrcs,
   alt,
   titleHint = `Фото з Telegram-каналу ${FARTLEK_PUBLIC_TELEGRAM_URL}`,
@@ -64,12 +67,12 @@ export function EventCoverImage({
   }, [originalSrc, alternateSrcs]);
 
   const proxiedUrl = useMemo(
-    () => eventCoverImageUrl(activeOriginal),
-    [activeOriginal],
+    () => eventCoverImageUrl(activeOriginal, telegramPostUrl),
+    [activeOriginal, telegramPostUrl],
   );
   const preferPostBody = useMemo(
-    () => eventImagePreferPostBody(activeOriginal),
-    [activeOriginal],
+    () => eventImagePreferPostBody(activeOriginal, telegramPostUrl),
+    [activeOriginal, telegramPostUrl],
   );
 
   /** blob: URL створений із відповіді POST /api/event-image */
@@ -82,7 +85,12 @@ export function EventCoverImage({
       const res = await fetch("/api/event-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: activeOriginal }),
+        body: JSON.stringify({
+          url: activeOriginal,
+          ...(telegramPostUrl?.trim()
+            ? { telegramPost: telegramPostUrl.trim() }
+            : {}),
+        }),
       });
       if (!res.ok) return null;
       const b = await res.blob();
@@ -90,7 +98,7 @@ export function EventCoverImage({
     } catch {
       return null;
     }
-  }, [activeOriginal]);
+  }, [activeOriginal, telegramPostUrl]);
 
   useEffect(() => {
     postRecoverAttemptedRef.current = false;
@@ -98,7 +106,7 @@ export function EventCoverImage({
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
-  }, [activeOriginal]);
+  }, [activeOriginal, telegramPostUrl]);
 
   /** Довгі URL — лише POST, без завеликого GET */
   useEffect(() => {
