@@ -166,13 +166,106 @@ export async function getLatestTelegramSyncTimeFromDb(): Promise<string | null> 
   return t?.trim() ? t : null;
 }
 
+function parseImagesCell(raw: unknown): string[] {
+  if (Array.isArray(raw)) {
+    return raw.filter((x): x is string => typeof x === "string");
+  }
+  if (typeof raw === "string") {
+    try {
+      const j = JSON.parse(raw) as unknown;
+      return Array.isArray(j)
+        ? j.filter((x): x is string => typeof x === "string")
+        : [];
+    } catch {
+      return [];
+    }
+  }
+  return [];
+}
+
+type ExistingRichRow = {
+  post_id: number;
+  raw_html: string | null;
+  images: unknown;
+};
+
+async function fetchExistingRichRows(
+  postIds: number[],
+): Promise<Map<number, ExistingRichRow>> {
+  const map = new Map<number, ExistingRichRow>();
+  const uniq = [...new Set(postIds)].filter((n) => Number.isFinite(n));
+  if (uniq.length === 0) return map;
+
+  const supabase = getSupabaseAdmin();
+  const chunk = 400;
+  for (let i = 0; i < uniq.length; i += chunk) {
+    const slice = uniq.slice(i, i + chunk);
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("post_id,raw_html,images")
+      .in("post_id", slice);
+    if (error) throw error;
+    for (const row of (data ?? []) as ExistingRichRow[]) {
+      map.set(Number(row.post_id), row);
+    }
+  }
+  return map;
+}
+
+/**
+ * Якщо heartbeat/інкрементний синк приніс допис без raw_html або без images,
+ * не перетирати багатший рядок у БД — інакше зникають CDN-посилання з HTML і лишається лише логотип на сайті.
+ */
+function mergeIncomingPostsPreservingRichMedia(
+  posts: TelegramPost[],
+  existingById: Map<number, ExistingRichRow>,
+): TelegramPost[] {
+  return posts.map((p) => {
+    const ex = existingById.get(p.postId);
+    if (!ex) return p;
+
+    const incomingHtml = p.rawHtml?.trim();
+    const existingHtml =
+      typeof ex.raw_html === "string" ? ex.raw_html.trim() : "";
+    const rawHtml = incomingHtml
+      ? p.rawHtml
+      : existingHtml
+        ? ex.raw_html ?? undefined
+        : p.rawHtml;
+
+    const incomingImgs = Array.isArray(p.images) ? p.images : [];
+    const existingImgs = parseImagesCell(ex.images);
+
+    const images =
+      incomingImgs.length > 0
+        ? incomingImgs
+        : existingImgs.length > 0
+          ? existingImgs
+          : incomingImgs;
+
+    const next: TelegramPost = { ...p, rawHtml, images };
+    const htmlEq = (p.rawHtml ?? "") === (next.rawHtml ?? "");
+    const imgEq =
+      JSON.stringify(Array.isArray(p.images) ? p.images : []) ===
+      JSON.stringify(Array.isArray(next.images) ? next.images : []);
+    if (htmlEq && imgEq) return p;
+
+    return next;
+  });
+}
+
 export async function upsertTelegramPosts(
   posts: TelegramPost[],
 ): Promise<number> {
   if (posts.length === 0) return 0;
   const supabase = getSupabaseAdmin();
   const syncedAt = new Date().toISOString();
-  const rows = posts.map((p) => ({
+
+  const ids = posts.map((p) => p.postId);
+  const existingById = await fetchExistingRichRows(ids);
+  const merged = mergeIncomingPostsPreservingRichMedia(posts, existingById);
+
+  const rows = merged.map((p) => ({
     ...postToRow(p),
     synced_at: syncedAt,
   }));

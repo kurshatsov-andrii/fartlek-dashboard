@@ -12,7 +12,7 @@ import {
   eventCoverImageUrl,
   eventImagePreferPostBody,
 } from "@/lib/event-image";
-import { acceptsParserExtractedMediaUrl } from "@/lib/telegram-media-urls";
+import { isTelegramCdnHostname } from "@/lib/telegram-cdn-hostname";
 import { FARTLEK_PUBLIC_TELEGRAM_URL } from "@/lib/fartlek-telegram-public";
 import { cn } from "@/lib/utils";
 
@@ -34,6 +34,19 @@ function isFallbackCoverSrc(src: string): boolean {
     t === EVENT_COVER_FALLBACK ||
     t.endsWith("/telegram-channel-cover.svg")
   );
+}
+
+/** Інколи CDN Telegram відсікає запити з чужим Referer; без referrer частина файлів віддається у <img>. */
+function imgReferrerPolicyForSrc(src: string): "no-referrer" | undefined {
+  if (!src.startsWith("https://")) return undefined;
+  try {
+    const u = new URL(src);
+    if (isTelegramCdnHostname(u.hostname)) return "no-referrer";
+    if (u.hostname.toLowerCase() === "telegraph.controller.bot") return "no-referrer";
+  } catch {
+    return undefined;
+  }
+  return undefined;
 }
 
 /**
@@ -106,7 +119,6 @@ export function EventCoverImage({
 
     return () => {
       cancelled = true;
-      setPosterHydrateDone(true);
     };
   }, [chainIsOnlyFallback, telegramPostUrl]);
 
@@ -215,16 +227,6 @@ export function EventCoverImage({
     if (blobUrl) return [blobUrl, activeOriginal, EVENT_COVER_FALLBACK];
     if (preferPostBody)
       return [activeOriginal, proxiedUrl, EVENT_COVER_FALLBACK];
-    /**
-     * Спочатку прямий HTTPS до CDN Telegram у браузері: з IP користувача файл частіше віддається,
-     * ніж із сервера Vercel через /api/event-image (який тоді дає 502 і «лише логотип» на кожній картці).
-     */
-    if (
-      proxiedUrl !== activeOriginal &&
-      acceptsParserExtractedMediaUrl(activeOriginal.trim())
-    ) {
-      return [activeOriginal, proxiedUrl, EVENT_COVER_FALLBACK];
-    }
     if (proxiedUrl !== activeOriginal)
       return [proxiedUrl, activeOriginal, EVENT_COVER_FALLBACK];
     return [activeOriginal, EVENT_COVER_FALLBACK];
@@ -302,6 +304,7 @@ export function EventCoverImage({
       title={titleHint}
       loading={loading}
       decoding="async"
+      referrerPolicy={imgReferrerPolicyForSrc(src)}
       onError={onError}
       className={cn(className)}
     />
