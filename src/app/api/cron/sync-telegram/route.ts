@@ -14,7 +14,14 @@ export async function GET(req: NextRequest) {
   if (cronSecret) {
     const auth = req.headers.get("authorization");
     if (auth !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ ok: false }, { status: 401 });
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "unauthorized",
+          hint: "Додайте заголовок Authorization: Bearer <CRON_SECRET>. Перехід у браузері без цього заголовка завжди дає 401.",
+        },
+        { status: 401 },
+      );
     }
   }
 
