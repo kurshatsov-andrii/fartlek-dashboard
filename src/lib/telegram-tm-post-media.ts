@@ -15,6 +15,35 @@ const SINGLE_POST_HEADERS = {
   Accept: "text/html,application/xhtml+xml",
 } as const;
 
+const CHROME_LIKE_HEADERS = {
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+  "Accept-Language": "uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7",
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+} as const;
+
+async function fetchTelegramPublicPostHtml(
+  canonical: string,
+): Promise<string | null> {
+  const attempts = [SINGLE_POST_HEADERS, CHROME_LIKE_HEADERS];
+  for (const headers of attempts) {
+    try {
+      const res = await fetch(canonical, {
+        headers,
+        cache: "no-store",
+        redirect: "follow",
+      });
+      if (!res.ok) continue;
+      const html = await res.text();
+      if (html.length < 900) continue;
+      return html;
+    } catch {
+      continue;
+    }
+  }
+  return null;
+}
+
 const WIDGET_WRAP_MARKER = "tgme_widget_message_wrap js-widget_message_wrap";
 
 function escapeRegex(s: string): string {
@@ -133,13 +162,8 @@ export async function fetchFreshPosterUrlsFromPublicPostPage(
   if (!canonical) return [];
 
   try {
-    const res = await fetch(canonical, {
-      headers: SINGLE_POST_HEADERS,
-      cache: "no-store",
-      redirect: "follow",
-    });
-    if (!res.ok) return [];
-    const html = await res.text();
+    const html = await fetchTelegramPublicPostHtml(canonical);
+    if (!html) return [];
 
     const ids = parseSlugAndPostIdFromCanonical(canonical);
     const widgetHtml =

@@ -107,7 +107,9 @@ function isTelegramCdnPosterHost(hostname: string): boolean {
  * Списки зазвичай упорядковані так, що основне фото допису йде першим (`photo_wrap`).
  * Раніше брали лише «найдовший» URL — службові й дрібні асети могли бути довшими за справжню афішу.
  */
-function pickCoverUrlFromPosterList(list: readonly string[]): string | undefined {
+export function pickCoverUrlFromPosterList(
+  list: readonly string[],
+): string | undefined {
   if (list.length === 0) return undefined;
 
   try {

@@ -5,9 +5,15 @@ import {
   loadImageFromUpstream,
   parseCachableImageUrl,
 } from "@/lib/event-image-pipeline";
-import { finalizePosterImageUrls } from "@/lib/telegram-media-urls";
+import {
+  expandTelegramPostImages,
+  finalizePosterImageUrls,
+} from "@/lib/telegram-media-urls";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
-import { updateTelegramPostImages } from "@/lib/telegram-db";
+import {
+  getTelegramPostByPostId,
+  updateTelegramPostImages,
+} from "@/lib/telegram-db";
 import {
   fetchFreshPosterUrlsFromPublicPostPage,
   normalizeTelegramPublicPostHref,
@@ -77,13 +83,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const postId = parseNumericPostIdFromPermalink(canonical);
+
   const rawUrls = await fetchFreshPosterUrlsFromPublicPostPage(canonical);
   let urls = finalizePosterImageUrls(rawUrls).filter(
     (u) => !isRejectedStoredTelegramImageUrl(u),
   );
+  if (
+    urls.length === 0 &&
+    postId !== null &&
+    isSupabaseConfigured()
+  ) {
+    const row = await getTelegramPostByPostId(postId);
+    if (row) {
+      urls = finalizePosterImageUrls(expandTelegramPostImages(row)).filter(
+        (u) => !isRejectedStoredTelegramImageUrl(u),
+      );
+    }
+  }
   urls = await prioritizeReachablePosterUrls(urls, 8);
 
-  const postId = parseNumericPostIdFromPermalink(canonical);
   if (
     postId !== null &&
     urls.length > 0 &&

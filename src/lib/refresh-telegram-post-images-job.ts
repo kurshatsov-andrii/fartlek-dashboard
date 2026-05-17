@@ -3,6 +3,7 @@ import {
   canonicalTelegramAssetUrlKey,
   expandTelegramPostImages,
   finalizePosterImageUrls,
+  pickCoverUrlFromPosterList,
 } from "@/lib/telegram-media-urls";
 import { fetchFreshPosterUrlsFromPublicPostPage } from "@/lib/telegram-tm-post-media";
 import { fetchTelegramChannelBrandImageUrlKeys } from "@/lib/telegram-channel-brand-media";
@@ -83,9 +84,13 @@ export async function runRefreshTelegramPostImagesJob(): Promise<RefreshTelegram
     } else {
       const permalink = `https://t.me/${TELEGRAM_CHANNEL.username}/${p.postId}`;
       next = await fetchFreshPosterUrlsFromPublicPostPage(permalink);
-      if (mergeLegacy) {
-        const fromDbHtml = expandTelegramPostImages({ ...p, images: [] });
-        next = finalizePosterImageUrls([...next, ...fromDbHtml]);
+      /**
+       * Якщо t.me з датацентру не віддав HTML — не залишаємо порожній список (інколи cron так
+       * обнулив би `images`). Завжди додаємо те, що вже є в БД/HTML/тексті допису.
+       */
+      if (mergeLegacy || next.length === 0) {
+        const fromDb = expandTelegramPostImages(p);
+        next = finalizePosterImageUrls([...next, ...fromDb]);
       }
       await pause(FETCH_GAP_MS);
     }
@@ -152,10 +157,21 @@ export async function runRefreshTelegramPostImagesJob(): Promise<RefreshTelegram
 
   let emptyFinal = 0;
   for (const p of posts) {
-    let next = byPostId.get(p.postId) ?? [];
-    next = finalizePosterImageUrls(
-      next.filter((u) => !dominantKeys.has(canonicalTelegramAssetUrlKey(u))),
+    const beforeDominant = byPostId.get(p.postId) ?? [];
+    let next = finalizePosterImageUrls(
+      beforeDominant.filter(
+        (u) => !dominantKeys.has(canonicalTelegramAssetUrlKey(u)),
+      ),
     );
+    if (next.length === 0 && beforeDominant.length > 0) {
+      const rescue = pickCoverUrlFromPosterList(beforeDominant);
+      next = finalizePosterImageUrls(
+        rescue ? [rescue] : [beforeDominant[0]!],
+      );
+    }
+    if (next.length === 0) {
+      next = finalizePosterImageUrls(expandTelegramPostImages(p));
+    }
     if (next.length === 0) emptyFinal += 1;
     await updateTelegramPostImages(p.postId, next);
   }

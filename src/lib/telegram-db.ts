@@ -109,6 +109,22 @@ export async function listTelegramPostsFromDb(): Promise<TelegramPost[]> {
   return all;
 }
 
+export async function getTelegramPostByPostId(
+  postId: number,
+): Promise<TelegramPost | null> {
+  const supabase = getSupabaseAdmin();
+  const { data, error } = await supabase
+    .from(TABLE)
+    .select(
+      "post_id,channel_id,channel_name,text_content,post_iso_date,images,links,views,likes,raw_html",
+    )
+    .eq("post_id", postId)
+    .maybeSingle();
+  if (error) throw error;
+  if (data == null) return null;
+  return rowToPost(data as TelegramPostRow);
+}
+
 /** Порожнить `telegram_posts`, видаляючи рядки батчами. */
 export async function deleteAllTelegramPosts(): Promise<number> {
   const supabase = getSupabaseAdmin();
