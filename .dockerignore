@@ -1,0 +1,28 @@
+# deps & build artifacts
+node_modules
+.next
+out
+coverage
+.tmp
+.cache
+
+# env & secrets (передайте змінні через compose / build-args / runtime env)
+.env
+.env.*
+!.env.example
+
+# VCS / IDE
+.git
+.github
+.idea
+.vscode
+*.md
+!README.md
+
+# tooling
+.vercel
+
+# локальні SSL у контексті збірки не потрібні (монтуємо під час запуску)
+nginx/ssl/*.pem
+
+# локальний lock малого бекенду збирається у власному образі

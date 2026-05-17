@@ -1,0 +1,89 @@
+# Fartlek: NGINX (TLS) → Next.js frontend + малий Compose-backend → PostgreSQL
+#
+# 1. Згенеруйте сертифікати (розробка): sh nginx/ssl/gen-self-signed.sh
+# 2. Скопіюйте .env.example у .env для підстановки ${...} у цьому файлі (файл опційний; без нього — порожні дефолти).
+# 3. Запуск: docker compose up --build -d
+#
+# Основний «бекенд» API — Next.js (/api/*). Сервіс backend — орієнтир для окремої логіки та перевірки БД (/svc/).
+# PostgreSQL у цьому стек — для вашого використання або майбутнього self-hosted; Next з коробки лишається на Supabase Cloud (змінні NEXT_PUBLIC_* / SUPABASE_*).
+
+name: fartlek-dashboard
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-fartlek}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-fartlek}
+      POSTGRES_DB: ${POSTGRES_DB:-fartlek}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    healthcheck:
+      test:
+        ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fartlek} -d ${POSTGRES_DB:-fartlek}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./docker/backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgres://fartlek:fartlek@postgres:5432/fartlek}
+      PORT: "4000"
+    expose:
+      - "4000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+        NEXT_PUBLIC_WAYFORPAY_PUBLISH_URL: ${NEXT_PUBLIC_WAYFORPAY_PUBLISH_URL:-}
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-}
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:-}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:-}
+      NEXT_PUBLIC_WAYFORPAY_PUBLISH_URL: ${NEXT_PUBLIC_WAYFORPAY_PUBLISH_URL:-}
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY:-}
+      ADMIN_EMAIL_ALLOWLIST: ${ADMIN_EMAIL_ALLOWLIST:-}
+      TELEGRAM_SYNC_SECRET: ${TELEGRAM_SYNC_SECRET:-}
+      CRON_SECRET: ${CRON_SECRET:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-}
+    expose:
+      - "3000"
+
+  nginx:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - backend
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - certbot_www:/var/www/certbot:ro
+
+volumes:
+  postgres_data:
+  certbot_www:

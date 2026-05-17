@@ -77,6 +77,16 @@ Open [http://localhost:3000](http://localhost:3000).
 | `npm run start` | Start the production server |
 | `npm run lint` | Run ESLint |
 
+### Docker (NGINX + TLS + Postgres + Compose-backend)
+
+```bash
+sh nginx/ssl/gen-self-signed.sh   # or place fullchain.pem / privkey.pem in nginx/ssl/
+cp .env.example .env              # optional: variables interpolated by docker-compose.yml
+docker compose up --build -d      # alternatively: docker-compose up --build -d
+```
+
+Open **https://localhost** (browser warning for self-signed certs). Next.js serves `/` and `/api/*`; the separate Compose `backend` is exposed via **https://localhost/svc/health**. **Docker Engine** must be running (Docker Desktop on Windows).
+
 ## Revenue model
 
 Each event placement costs **100 UAH**.
