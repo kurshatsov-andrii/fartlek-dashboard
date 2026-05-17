@@ -27,11 +27,19 @@ type EventCoverImageProps = {
   loading?: "lazy" | "eager";
 };
 
+function isFallbackCoverSrc(src: string): boolean {
+  const t = src.trim();
+  return (
+    t === EVENT_COVER_FALLBACK ||
+    t.endsWith("/telegram-channel-cover.svg")
+  );
+}
+
 /**
  * Превʼю через /api/event-image (CDN Telegram / Telegraph).
- * — Для довгих URL (великий `?url=`) — POST + blob, без обрізання query-string.
- * — При помилці GET пробуємо один раз постовий запит.
- * — Є запасні URL з того ж допису (`alternateSrcs`), якщо основне превʼю недоступне.
+ * — Для довгих проксі-рядків спершу POST → blob (інколи GET у <img> не працює).
+ * — SVG-плейсхолдер не показуємо, доки тримається POST для таких URL.
+ * — Запасні URL з допису (`alternateSrcs`), якщо основне превʼю недоступне.
  */
 export function EventCoverImage({
   originalSrc,
@@ -42,17 +50,82 @@ export function EventCoverImage({
   className,
   loading = "lazy",
 }: EventCoverImageProps) {
+  /** Якщо в БД лише локальний SVG — один раз знімаємо превʼю з публічної сторінки поста. */
+  const chainIsOnlyFallback = useMemo(() => {
+    const seq = [originalSrc, ...(alternateSrcs ?? [])]
+      .map((u) => u?.trim())
+      .filter(Boolean);
+    if (seq.length === 0) return true;
+    return seq.every((t) => isFallbackCoverSrc(t));
+  }, [originalSrc, alternateSrcs]);
+
+  const [posterFromPost, setPosterFromPost] = useState<string | null>(null);
+  const [posterHydrateDone, setPosterHydrateDone] = useState(
+    () => !chainIsOnlyFallback,
+  );
+
+  useEffect(() => {
+    setPosterFromPost(null);
+    setPosterHydrateDone(!chainIsOnlyFallback);
+  }, [
+    chainIsOnlyFallback,
+    telegramPostUrl,
+    originalSrc,
+    alternateSrcs,
+  ]);
+
+  useEffect(() => {
+    const tg = telegramPostUrl?.trim();
+    if (!tg || !chainIsOnlyFallback) {
+      setPosterHydrateDone(true);
+      return;
+    }
+
+    let cancelled = false;
+    setPosterHydrateDone(false);
+
+    void (async () => {
+      try {
+        const res = await fetch("/api/telegram-post-cover", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ telegramPost: tg }),
+        });
+        if (!res.ok || cancelled) return;
+        const data = (await res.json()) as { urls?: unknown };
+        const urls = Array.isArray(data.urls)
+          ? data.urls.filter((x): x is string => typeof x === "string")
+          : [];
+        const first = urls.find((u) => /^https:\/\//i.test(u.trim()));
+        if (first && !cancelled) setPosterFromPost(first.trim());
+      } finally {
+        if (!cancelled) setPosterHydrateDone(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      setPosterHydrateDone(true);
+    };
+  }, [chainIsOnlyFallback, telegramPostUrl]);
+
   const originChain = useMemo(() => {
     const seen = new Set<string>();
-    const out: string[] = [];
+    const raw: string[] = [];
+    const pf = posterFromPost?.trim();
+    if (pf) {
+      seen.add(pf);
+      raw.push(pf);
+    }
     for (const u of [originalSrc, ...(alternateSrcs ?? [])]) {
       const t = u?.trim();
       if (!t || seen.has(t)) continue;
       seen.add(t);
-      out.push(t);
+      raw.push(t);
     }
-    return out;
-  }, [originalSrc, alternateSrcs]);
+    const preferred = raw.filter((s) => !isFallbackCoverSrc(s));
+    return preferred.length > 0 ? preferred : raw;
+  }, [originalSrc, alternateSrcs, posterFromPost]);
 
   const originChainRef = useRef(originChain);
   originChainRef.current = originChain;
@@ -60,11 +133,11 @@ export function EventCoverImage({
   const [originIndex, setOriginIndex] = useState(0);
   const activeOriginal =
     originChain[Math.min(originIndex, Math.max(0, originChain.length - 1))] ??
-    originalSrc;
+    originalSrc.trim();
 
   useEffect(() => {
     setOriginIndex(0);
-  }, [originalSrc, alternateSrcs]);
+  }, [originChain]);
 
   const proxiedUrl = useMemo(
     () => eventCoverImageUrl(activeOriginal, telegramPostUrl),
@@ -75,7 +148,6 @@ export function EventCoverImage({
     [activeOriginal, telegramPostUrl],
   );
 
-  /** blob: URL створений із відповіді POST /api/event-image */
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const postRecoverAttemptedRef = useRef(false);
   const candidatesRef = useRef<string[]>([]);
@@ -100,36 +172,48 @@ export function EventCoverImage({
     }
   }, [activeOriginal, telegramPostUrl]);
 
+  /** Довгі проксі-URL: один POST у blob перед показом <img>, щоб не «залипати» на SVG */
+  const [longProxyResolved, setLongProxyResolved] = useState(false);
+
   useEffect(() => {
     postRecoverAttemptedRef.current = false;
     setBlobUrl((prev) => {
       if (prev) URL.revokeObjectURL(prev);
       return null;
     });
-  }, [activeOriginal, telegramPostUrl]);
 
-  /** Довгі URL — лише POST, без завеликого GET */
-  useEffect(() => {
-    if (!preferPostBody) return;
+    if (!preferPostBody) {
+      setLongProxyResolved(true);
+      return;
+    }
+
+    setLongProxyResolved(false);
     let cancelled = false;
     let created: string | null = null;
+
     void (async () => {
       const u = await loadViaPost();
-      if (!u || cancelled) return;
+      if (cancelled) return;
+      setLongProxyResolved(true);
+      if (!u) return;
       created = u;
       setBlobUrl(u);
     })();
+
     return () => {
       cancelled = true;
       if (created) URL.revokeObjectURL(created);
-      setBlobUrl(null);
+      setBlobUrl((prev) => {
+        if (prev) URL.revokeObjectURL(prev);
+        return null;
+      });
     };
   }, [preferPostBody, activeOriginal, loadViaPost]);
 
   const candidates = useMemo(() => {
     if (blobUrl) return [blobUrl, activeOriginal, EVENT_COVER_FALLBACK];
     if (preferPostBody)
-      return [EVENT_COVER_FALLBACK, activeOriginal, EVENT_COVER_FALLBACK];
+      return [activeOriginal, proxiedUrl, EVENT_COVER_FALLBACK];
     if (proxiedUrl !== activeOriginal)
       return [proxiedUrl, activeOriginal, EVENT_COVER_FALLBACK];
     return [activeOriginal, EVENT_COVER_FALLBACK];
@@ -184,6 +268,20 @@ export function EventCoverImage({
     preferPostBody,
     proxiedUrl,
   ]);
+
+  const awaitingLongProxyBlob =
+    preferPostBody && blobUrl === null && !longProxyResolved;
+
+  const awaitingPosterHydrate =
+    chainIsOnlyFallback &&
+    Boolean(telegramPostUrl?.trim()) &&
+    !posterHydrateDone;
+
+  if (awaitingPosterHydrate || awaitingLongProxyBlob) {
+    return (
+      <div className={cn(className, "bg-ink-900/90")} aria-hidden />
+    );
+  }
 
   return (
     <img

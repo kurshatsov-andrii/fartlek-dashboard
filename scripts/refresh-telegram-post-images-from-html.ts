@@ -1,9 +1,18 @@
 /**
- * Оновлює масив `images` у `telegram_posts`, витягуючи CDN/Telegraph URL з `raw_html`
- * і тексту так само, як на дашборді. Запускати після змін у парсері медіа або якщо
- * превʼю зникли через застарілі URL у колонці `images`.
+ * Повністю перезаписує `telegram_posts.images`:
+ * - лише HTTPS-посилання з публічної сторінки поста `https://t.me/{канал}/{post_id}`;
+ * - без локального `/telegram-channel-cover.svg` та інших не-Telegram URL;
+ * - без аватарки/og каналу (`t.me/{slug}`);
+ * - без CDN-посилання, що повторюється у занадто багатьох дописах (типовий «один логотип на всіх»).
+ *
+ * Додати мердж із raw_html + текстом: REFRESH_POST_IMAGES_MERGE_LEGACY=1
+ * Лише БД без запитів до t.me: REFRESH_POST_IMAGES_SKIP_PUBLIC=1
+ *
+ * Частка дописів для глобального виключення однакового CDN (за замовчуванням 0.42): REFRESH_DOMINANT_IMAGE_RATIO=0.42
  *
  * npm run refresh:post-images
+ *
+ * Щоденний автозапуск на проді: Vercel Cron → GET /api/cron/refresh-post-images (див. vercel.json).
  */
 
 import { config } from "dotenv";
@@ -18,36 +27,10 @@ async function main() {
     process.exit(1);
   }
 
-  const { listTelegramPostsFromDb, updateTelegramPostImages } = await import(
-    "@/lib/telegram-db"
+  const { runRefreshTelegramPostImagesJob } = await import(
+    "@/lib/refresh-telegram-post-images-job"
   );
-  const { expandTelegramPostImages } = await import("@/lib/telegram-media-urls");
-
-  const posts = await listTelegramPostsFromDb();
-  let updated = 0;
-  let unchanged = 0;
-
-  for (const p of posts) {
-    const next = expandTelegramPostImages(p);
-    const prevJson = JSON.stringify(p.images);
-    const nextJson = JSON.stringify(next);
-    if (prevJson === nextJson) {
-      unchanged += 1;
-      continue;
-    }
-    await updateTelegramPostImages(p.postId, next);
-    updated += 1;
-    if (updated <= 5 || updated % 50 === 0) {
-      console.log(
-        `post_id ${p.postId}: images ${(p.images?.length ?? 0)} → ${next.length}`,
-      );
-    }
-  }
-
-  console.log("");
-  console.log("Рядків у БД:", posts.length);
-  console.log("Оновлено записів images:", updated);
-  console.log("Без змін:", unchanged);
+  await runRefreshTelegramPostImagesJob();
 }
 
 main().catch((e) => {

@@ -1,7 +1,17 @@
 import type { TelegramPost } from "@/types";
+import { isRejectedStoredTelegramImageUrl } from "@/lib/event-image";
+import { narrowTelegramPostImagesToSingleCover } from "@/lib/telegram-media-urls";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 
 const TABLE = "telegram_posts";
+
+function sanitizeDbTelegramImages(images: string[]): string[] {
+  return narrowTelegramPostImagesToSingleCover(
+    images.filter(
+      (u) => typeof u === "string" && !isRejectedStoredTelegramImageUrl(u),
+    ),
+  );
+}
 
 type TelegramPostRow = {
   post_id: number;
@@ -17,11 +27,12 @@ type TelegramPostRow = {
 };
 
 function rowToPost(r: TelegramPostRow): TelegramPost {
-  const images = Array.isArray(r.images)
+  const imagesRaw = Array.isArray(r.images)
     ? (r.images as string[])
     : typeof r.images === "string"
       ? (JSON.parse(r.images) as string[])
       : [];
+  const images = sanitizeDbTelegramImages(imagesRaw);
   const links = Array.isArray(r.links)
     ? (r.links as string[])
     : typeof r.links === "string"
@@ -51,7 +62,7 @@ function postToRow(p: TelegramPost): TelegramPostRow {
     channel_name: p.channelName,
     text_content: p.text ?? "",
     post_iso_date: p.date ?? new Date().toISOString(),
-    images: p.images ?? [],
+    images: sanitizeDbTelegramImages(Array.isArray(p.images) ? p.images : []),
     links: p.links ?? [],
     views: p.views ?? 0,
     likes: p.likes ?? 0,
@@ -166,9 +177,45 @@ export async function updateTelegramPostImages(
   images: string[],
 ): Promise<void> {
   const supabase = getSupabaseAdmin();
+  const safe = sanitizeDbTelegramImages(images);
   const { error } = await supabase
     .from(TABLE)
-    .update({ images })
+    .update({ images: safe })
     .eq("post_id", postId);
   if (error) throw error;
+}
+
+/**
+ * Обнуляє `images` для всіх рядків (батчами). Не чіпає `raw_html`, текст тощо.
+ */
+export async function clearAllTelegramPostImages(): Promise<number> {
+  const supabase = getSupabaseAdmin();
+  let total = 0;
+  const chunk = 400;
+  let from = 0;
+
+  for (;;) {
+    const { data, error } = await supabase
+      .from(TABLE)
+      .select("post_id")
+      .order("post_id", { ascending: true })
+      .range(from, from + chunk - 1);
+
+    if (error) throw error;
+    const rows = data ?? [];
+    if (rows.length === 0) break;
+
+    const ids = rows.map((r: { post_id: number }) => Number(r.post_id));
+    const { error: upErr } = await supabase
+      .from(TABLE)
+      .update({ images: [] })
+      .in("post_id", ids);
+    if (upErr) throw upErr;
+
+    total += ids.length;
+    if (rows.length < chunk) break;
+    from += chunk;
+  }
+
+  return total;
 }

@@ -95,21 +95,32 @@ async function pipeImage(
       ? await fetchFreshPosterUrlsFromPublicPostPage(canonical)
       : [];
 
+    let verifiedWinner: string | null = null;
     for (const cand of freshList) {
       const u = parseCachableImageUrl(cand);
       if (!u) continue;
       res = await tryLoad(u);
-      if (
-        res &&
-        postId !== null &&
-        freshList.length > 0 &&
-        isSupabaseConfigured()
-      ) {
-        void updateTelegramPostImages(postId, freshList.slice(0, 24)).catch(
-          () => {},
-        );
+      if (res) {
+        verifiedWinner = cand;
+        break;
       }
-      if (res) break;
+    }
+
+    /**
+     * У БД має потрапити спершу URL, який реально віддав байти з CDN — інакше
+     * у колонці `images` лишаються прострочені посилання (404 у браузері без проксі).
+     */
+    if (
+      res &&
+      postId !== null &&
+      verifiedWinner !== null &&
+      isSupabaseConfigured()
+    ) {
+      const reordered = [
+        verifiedWinner,
+        ...freshList.filter((c) => c !== verifiedWinner),
+      ];
+      void updateTelegramPostImages(postId, reordered).catch(() => {});
     }
   }
 

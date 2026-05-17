@@ -149,8 +149,11 @@ function scrubMiniUserAvatars(html: string): string {
  * Превʼю зображень у дописі: скануємо ВЕСЬ фрагмент повідомлення.
  * Частину з `tgme_widget_message_photo_wrap` Telegram ставить ДО текстової «бульбашки»
  * — вирізання лише тексту після `tgme_widget_message_bubble` ховало основне фото.
+ *
+ * Експорт для сторінки окремого поста (`t.me/c/NNN`): там саме віджет містить URL афіші,
+ * на відміну від `og:image`, який часто дає загальну аватарку/обкладинку каналу.
  */
-function extractOrderedMessageMedia(htmlBlock: string): string[] {
+export function extractOrderedWidgetMediaUrlsFromHtml(htmlBlock: string): string[] {
   const scope = scrubMiniUserAvatars(htmlBlock);
   const urls: string[] = [];
   const seen = new Set<string>();
@@ -173,6 +176,10 @@ function extractOrderedMessageMedia(htmlBlock: string): string[] {
       push(v.replace(/^\/\//, "https:"));
     if (/cdn\d*\.cdn-telegram\.org/i.test(v))
       push(v.replace(/^\/\//, "https:"));
+    if (/cdn\d*\.telegram-cdn\.org/i.test(v))
+      push(v.replace(/^\/\//, "https:"));
+    if (/cdn\.telegram\.org\b/i.test(v))
+      push(v.replace(/^\/\//, "https:"));
     if (v.includes("telegraph.controller.bot"))
       push(v.startsWith("//") ? `https:${v}` : v);
   }
@@ -182,7 +189,17 @@ function extractOrderedMessageMedia(htmlBlock: string): string[] {
     push(mm[0]);
   }
   for (const mm of scope.matchAll(
+    /https?:\/\/cdn\d*\.telegram-cdn\.org\/[^\s"'>)]+/gi,
+  )) {
+    push(mm[0]);
+  }
+  for (const mm of scope.matchAll(
     /https?:\/\/cdn\d+\.telesco\.pe\/[^\s"'>)]+/gi,
+  )) {
+    push(mm[0]);
+  }
+  for (const mm of scope.matchAll(
+    /https?:\/\/cdn\.telegram\.org\/[^\s"'>)]+/gi,
   )) {
     push(mm[0]);
   }
@@ -202,6 +219,64 @@ function extractOrderedMessageMedia(htmlBlock: string): string[] {
   }
   return urls;
 }
+
+/** Зупинка на межі наступного блоку контенту в розмітці t.me */
+function sliceUntilNextMessageSection(htmlTail: string): number {
+  const endMarkers = [
+    "tgme_widget_message_photo_wrap",
+    "tgme_widget_message_text",
+    "tgme_widget_message_video",
+    "tgme_widget_message_document",
+    "tgme_widget_message_poll",
+    "tgme_widget_message_inline_keyboard",
+    "tgme_widget_message_footer compact",
+    "tgme_widget_message_reactions",
+    "tgme_widget_message_forward",
+  ];
+  let cut = htmlTail.length;
+  for (const em of endMarkers) {
+    const j = htmlTail.indexOf(em, 1);
+    if (j !== -1 && j < cut) cut = j;
+  }
+  return Math.max(cut, 1);
+}
+
+/**
+ * Основне зображення допису — усередині `photo_wrap` / превʼю відео.
+ * Інакше парсер піднімає дрібні CDN-асети в віджеті й помилково ставить їх замість афіші події.
+ */
+export function extractPrimaryChatMediaUrlsFromHtml(htmlBlock: string): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+
+  const collectFromSlice = (slice: string) => {
+    for (const u of extractOrderedWidgetMediaUrlsFromHtml(slice)) {
+      if (seen.has(u)) continue;
+      seen.add(u);
+      out.push(u);
+    }
+  };
+
+  const markers = [
+    "tgme_widget_message_photo_wrap",
+    "tgme_widget_message_video_thumb",
+  ] as const;
+
+  for (const marker of markers) {
+    let searchFrom = 0;
+    while (true) {
+      const idx = htmlBlock.indexOf(marker, searchFrom);
+      if (idx === -1) break;
+      const tail = htmlBlock.slice(idx + marker.length);
+      const cut = sliceUntilNextMessageSection(tail);
+      collectFromSlice(tail.slice(0, cut));
+      searchFrom = idx + marker.length + cut;
+    }
+  }
+
+  return out;
+}
+
 /**
  * Parses Telegram public channel wall HTML (`/s/{slug}` → full page document).
  */
@@ -231,9 +306,15 @@ export function parseTelegramChannelWall(html: string): TelegramPost[] {
 
     const publishedAt = timeMatch?.[1] ?? new Date().toISOString();
     const messageTextPlain = extractMessagePlainText(block);
-    const messageMedia = extractOrderedMessageMedia(block);
+    const primaryMedia = extractPrimaryChatMediaUrlsFromHtml(block);
+    const widgetRest = extractOrderedWidgetMediaUrlsFromHtml(block);
+    const messageMediaOrdered: string[] = [...primaryMedia];
+    for (const u of widgetRest) {
+      if (messageMediaOrdered.includes(u)) continue;
+      messageMediaOrdered.push(u);
+    }
     const mergedImages = mergeTelegramPostImageSources(
-      messageMedia,
+      messageMediaOrdered,
       block,
       messageTextPlain,
     );

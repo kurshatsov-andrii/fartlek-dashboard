@@ -5,7 +5,10 @@
 
 import type { TelegramPost } from "@/types";
 import { TG_TEXT_URL_REGEX } from "@/services/telegram/parser";
-import { EVENT_COVER_FALLBACK } from "@/lib/event-image";
+import {
+  EVENT_COVER_FALLBACK,
+  isRejectedStoredTelegramImageUrl,
+} from "@/lib/event-image";
 import { isTelegramCdnHostname } from "@/lib/telegram-cdn-hostname";
 
 export function normalizeTelegramAssetUrl(raw: string): string | null {
@@ -23,6 +26,17 @@ export function normalizeTelegramAssetUrl(raw: string): string | null {
     return url.toString();
   } catch {
     return null;
+  }
+}
+
+/** Однаковий файл на CDN при порівнянні (dedupe / анти-«одне фото на всі пости»). */
+export function canonicalTelegramAssetUrlKey(raw: string): string {
+  try {
+    const u = new URL(raw.trim());
+    u.hash = "";
+    return u.href;
+  } catch {
+    return raw.trim();
   }
 }
 
@@ -90,8 +104,8 @@ function isTelegramCdnPosterHost(hostname: string): boolean {
 
 /**
  * Обкладинка серед CDN-превʼю Telegram.
- * Частина постів містить два «схожі» CDN-URL: другий елемент був евристикою проти смайлового кадру,
- * але він інколи гірший (інший розмір або застаріліший). Обираємо найдовший шлях — зазвичай це основне фото афші.
+ * Списки зазвичай упорядковані так, що основне фото допису йде першим (`photo_wrap`).
+ * Раніше брали лише «найдовший» URL — службові й дрібні асети могли бути довшими за справжню афішу.
  */
 function pickCoverUrlFromPosterList(list: readonly string[]): string | undefined {
   if (list.length === 0) return undefined;
@@ -105,6 +119,10 @@ function pickCoverUrlFromPosterList(list: readonly string[]): string | undefined
       }
     });
     const pool = telegramCdns.length > 0 ? telegramCdns : [...list];
+
+    for (const u of pool) {
+      if (!shouldExcludeDecorEmojiUrl(u)) return u;
+    }
     return [...pool].sort((a, b) => b.length - a.length)[0];
   } catch {
     return list[0];
@@ -124,6 +142,7 @@ export function finalizePosterImageUrls(urls: readonly string[]): string[] {
       (raw.trim().startsWith("http") ? raw.trim() : null);
     if (!n || seen.has(n)) continue;
     if (!acceptsParserExtractedMediaUrl(n)) continue;
+    if (isRejectedStoredTelegramImageUrl(n)) continue;
     seen.add(n);
     normOk.push(n);
   }
@@ -132,6 +151,18 @@ export function finalizePosterImageUrls(urls: readonly string[]): string[] {
   const pool = filtered.length > 0 ? filtered : normOk;
 
   return pool.slice(0, 24);
+}
+
+/**
+ * Колонка БД `telegram_posts.images` — рівно один URL обкладинки допису
+ * (найкращий кадр за тією ж логікою, що й картка події).
+ */
+export function narrowTelegramPostImagesToSingleCover(
+  urls: readonly string[],
+): string[] {
+  const finalized = finalizePosterImageUrls(urls);
+  const cover = pickCoverUrlFromPosterList(finalized);
+  return cover ? [cover] : [];
 }
 
 /** Усі прямі image-URL із плоского тексту допису. */
@@ -182,6 +213,8 @@ export function extractTelegramCdnUrlsFromHtml(html: string): string[] {
     if (/cdn\d*\.telesco\.pe/i.test(v)) push(v.replace(/^\/\//, "https:"));
     if (/cdn\d*\.cdn-telegram\.org/i.test(v))
       push(v.replace(/^\/\//, "https:"));
+    if (/cdn\d*\.telegram-cdn\.org/i.test(v))
+      push(v.replace(/^\/\//, "https:"));
     if (/cdn\.telegram\.org\b/i.test(v))
       push(v.replace(/^\/\//, "https:"));
     if (v.includes("telegraph.controller.bot") && /\/file\//i.test(v))
@@ -192,6 +225,8 @@ export function extractTelegramCdnUrlsFromHtml(html: string): string[] {
     if (/cdn\d*\.telesco\.pe/i.test(v)) push(v.replace(/^\/\//, "https:"));
     if (/cdn\d*\.cdn-telegram\.org/i.test(v))
       push(v.replace(/^\/\//, "https:"));
+    if (/cdn\d*\.telegram-cdn\.org/i.test(v))
+      push(v.replace(/^\/\//, "https:"));
     if (/cdn\.telegram\.org\b/i.test(v))
       push(v.replace(/^\/\//, "https:"));
     if (v.includes("telegraph.controller.bot"))
@@ -199,6 +234,11 @@ export function extractTelegramCdnUrlsFromHtml(html: string): string[] {
   }
   for (const mm of html.matchAll(
     /https?:\/\/cdn\d*\.cdn-telegram\.org\/[^\s"'>)]+/gi,
+  )) {
+    push(mm[0]);
+  }
+  for (const mm of html.matchAll(
+    /https?:\/\/cdn\d*\.telegram-cdn\.org\/[^\s"'>)]+/gi,
   )) {
     push(mm[0]);
   }
@@ -222,6 +262,43 @@ export function extractTelegramCdnUrlsFromHtml(html: string): string[] {
       const u = part.trim().replace(/\s+\d+[.]\d+x$/i, "").trim();
       if (u.startsWith("http")) push(u);
     }
+  }
+  return out;
+}
+
+/**
+ * Telegram-картки та окремі сторінки постів часто мають повний URL превʼю лише в метаданих,
+ * тоді як фрагмент у стрічці `/s/…` його не містить.
+ */
+export function extractOpenGraphImageUrlsFromHtml(html: string): string[] {
+  if (!html?.trim()) return [];
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const push = (raw: string) => {
+    const t = raw.trim();
+    if (!t) return;
+    const patched = t.startsWith("//") ? `https:${t}` : t;
+    const n =
+      normalizeTelegramAssetUrl(patched) ??
+      (patched.startsWith("http") ? patched.trim() : null);
+    if (!n || seen.has(n)) return;
+    if (!acceptsParserExtractedMediaUrl(n)) return;
+    seen.add(n);
+    out.push(n);
+  };
+
+  for (const mm of html.matchAll(/<meta\b[^>]*>/gi)) {
+    const tag = mm[0];
+    const isOg =
+      /\bproperty\s*=\s*["'](?:og:image|og:image:url|og:image:secure_url)["']/i.test(
+        tag,
+      );
+    const isTw = /\bname\s*=\s*["']twitter:image(?::src)?["']/i.test(tag);
+    if (!isOg && !isTw) continue;
+    const q =
+      /\bcontent\s*=\s*["']([^"']*)["']/i.exec(tag)?.[1] ??
+      /\bcontent\s*=\s*([^\s>]+)/i.exec(tag)?.[1];
+    if (q?.trim()) push(q);
   }
   return out;
 }
@@ -264,6 +341,8 @@ export function mergeTelegramPostImageSources(
   const sweep = [
     ...extractTelegraphFileUrlsFromHtml(fullMessageHtml),
     ...extractTelegramCdnUrlsFromHtml(fullMessageHtml),
+    /** Останнім: часто це аватарка/обкладинка каналу, а не афіша конкретного допису */
+    ...extractOpenGraphImageUrlsFromHtml(fullMessageHtml),
   ];
   const fromText = extractImageUrlsFromPlainText(plainText);
   const seen = new Set<string>();
@@ -309,16 +388,16 @@ export function telegramPostCoverCandidates(post: TelegramPost): string[] {
   const expanded = expandTelegramPostImages(post);
   const seen = new Set<string>();
   const ordered: string[] = [];
-  for (const u of [...row, ...expanded]) {
+  /** Спочатку розширений список (HTML + текст), потім лише колонка БД — щоб актуальні URL з превʼю не програвали застарілім `images`. */
+  for (const u of [...expanded, ...row]) {
     if (seen.has(u)) continue;
     seen.add(u);
     ordered.push(u);
   }
   if (ordered.length === 0) return [EVENT_COVER_FALLBACK];
 
-  const pool = row.length > 0 ? row : ordered;
-  const primary =
-    pickCoverUrlFromPosterList(pool) ?? pickCoverUrlFromPosterList(ordered);
+  /** Завжди з повного merged-списку; інакше при непустому `images` ігнорувались би додаткові кадри з `raw_html`. */
+  const primary = pickCoverUrlFromPosterList(ordered);
   if (!primary) return [EVENT_COVER_FALLBACK];
 
   const rest = ordered.filter((u) => u !== primary);
