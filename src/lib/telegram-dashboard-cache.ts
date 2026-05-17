@@ -78,7 +78,7 @@ async function assembleDashboard(): Promise<{
 
 const cachedDashboard = unstable_cache(
   assembleDashboard,
-  ["fartlek-telegram-dashboard-v23"],
+  ["fartlek-telegram-dashboard-v24"],
   { revalidate: 600, tags: [TELEGRAM_DASHBOARD_CACHE_TAG] },
 );
 

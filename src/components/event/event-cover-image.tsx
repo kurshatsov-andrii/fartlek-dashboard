@@ -12,6 +12,7 @@ import {
   eventCoverImageUrl,
   eventImagePreferPostBody,
 } from "@/lib/event-image";
+import { acceptsParserExtractedMediaUrl } from "@/lib/telegram-media-urls";
 import { isTelegramCdnHostname } from "@/lib/telegram-cdn-hostname";
 import { FARTLEK_PUBLIC_TELEGRAM_URL } from "@/lib/fartlek-telegram-public";
 import { cn } from "@/lib/utils";
@@ -227,6 +228,16 @@ export function EventCoverImage({
     if (blobUrl) return [blobUrl, activeOriginal, EVENT_COVER_FALLBACK];
     if (preferPostBody)
       return [activeOriginal, proxiedUrl, EVENT_COVER_FALLBACK];
+    /**
+     * Спочатку прямий HTTPS у браузері: CDN Telegram часто блокує саме серверний fetch на Vercel,
+     * тоді /api/event-image дає помилку і користувач бачить лише логотип. Проксі лишається запасним.
+     */
+    if (
+      proxiedUrl !== activeOriginal &&
+      acceptsParserExtractedMediaUrl(activeOriginal.trim())
+    ) {
+      return [activeOriginal, proxiedUrl, EVENT_COVER_FALLBACK];
+    }
     if (proxiedUrl !== activeOriginal)
       return [proxiedUrl, activeOriginal, EVENT_COVER_FALLBACK];
     return [activeOriginal, EVENT_COVER_FALLBACK];
