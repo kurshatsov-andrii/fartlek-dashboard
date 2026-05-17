@@ -18,7 +18,8 @@ import {
   FARTLEK_PUBLIC_TELEGRAM_URL,
 } from "@/lib/fartlek-telegram-public";
 
-export const revalidate = 600;
+/** На проді ISR може віддавати застарілі превʼю після змін у парсері БД — без force-dynamic HTML інколи лишається з логотипами. */
+export const dynamic = "force-dynamic";
 
 export const maxDuration = 300;
 

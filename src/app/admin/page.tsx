@@ -10,7 +10,7 @@ import { computeStats } from "@/lib/analytics";
 import { fetchTelegramDashboard } from "@/lib/telegram-dashboard-cache";
 import type { Metadata } from "next";
 
-export const revalidate = 600;
+export const dynamic = "force-dynamic";
 
 export const maxDuration = 300;
 

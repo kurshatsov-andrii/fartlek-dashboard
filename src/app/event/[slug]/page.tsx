@@ -26,7 +26,8 @@ import { sortDistancesDisplayLine } from "@/lib/distance-sort";
 import { organizerLatinInitials } from "@/lib/organizer-initials";
 import { stripUrlsFromAfficheText } from "@/lib/affiche-text";
 
-export const revalidate = 600;
+/** Узгоджено з головною: свіжі event.image з Supabase без застряглого Route Cache на Vercel. */
+export const dynamic = "force-dynamic";
 
 export const maxDuration = 300;
 
