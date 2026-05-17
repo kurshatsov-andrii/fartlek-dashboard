@@ -102,15 +102,15 @@ export default async function EventAnalysisPage({
         <section className="relative w-full bg-ink-900">
           <div className="relative w-full aspect-[16/7] min-h-[240px] sm:min-h-[280px] max-h-[min(70vh,640px)]">
             <EventCoverImage
-              originalSrc={event.image}
-              telegramPostUrl={event.registrationLink}
-              alternateSrcs={event.imageAlternates}
               alt={event.title}
-              titleHint="Фото з допису в Telegram"
-              loading="eager"
-              className="absolute inset-0 h-full w-full object-cover"
+              titleHint="Обкладинка події"
+              variant="hero"
+              className="absolute inset-0 z-0 h-full w-full"
             />
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/30 to-transparent" />
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[52%] bg-gradient-to-t from-ink-950 to-transparent"
+              aria-hidden
+            />
             <div className="absolute top-4 left-4 right-4 z-10 flex flex-wrap items-center gap-2 justify-between">
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge status={event.status} />

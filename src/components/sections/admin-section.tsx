@@ -373,11 +373,9 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                   className="py-3.5 md:py-4 flex items-center gap-3 md:gap-4"
                 >
                   <EventCoverImage
-                    originalSrc={e.image}
-                    telegramPostUrl={e.registrationLink}
-                    alt=""
-                    loading="lazy"
-                    className="h-11 w-11 md:h-12 md:w-12 rounded-lg object-cover shrink-0"
+                    alt={e.title}
+                    variant="thumb"
+                    className="h-11 w-11 md:h-12 md:w-12 rounded-lg shrink-0 border border-white/10"
                   />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm md:text-[15px] font-medium truncate">

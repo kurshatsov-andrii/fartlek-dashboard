@@ -31,15 +31,15 @@ export function EventCard({ event }: EventCardProps) {
     <article className="group relative h-full glass rounded-2xl overflow-hidden hover:border-neon/40 hover:-translate-y-1 hover:shadow-glass transition-all duration-300 flex flex-col">
       <div className="relative aspect-[16/10] overflow-hidden bg-ink-900">
         <EventCoverImage
-          originalSrc={event.image}
-          telegramPostUrl={event.registrationLink}
-          alternateSrcs={event.imageAlternates}
           alt={event.title}
-          titleHint={`Фото прев'ю з поста в Telegram ${FARTLEK_PUBLIC_TELEGRAM_URL}`}
-          loading="lazy"
-          className="absolute inset-0 z-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-110"
+          titleHint={`Обкладинка події · пост у Telegram ${FARTLEK_PUBLIC_TELEGRAM_URL}`}
+          variant="card"
+          className="absolute inset-0 z-0 h-full w-full"
         />
-        <div className="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-ink-950/90 via-ink-950/20 to-transparent" />
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[42%] bg-gradient-to-t from-ink-950/95 to-transparent"
+          aria-hidden
+        />
 
         <div className="absolute top-3 left-3 z-[2] flex items-center gap-2">
           <StatusBadge status={event.status} />
