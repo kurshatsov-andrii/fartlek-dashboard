@@ -7,6 +7,7 @@ import type {
 } from "@/types";
 import { getCityByName } from "@/data/cities";
 import {
+  dominantPosterAssetKeysAcrossPosts,
   telegramPostCoverCandidates,
 } from "@/lib/telegram-media-urls";
 import { EVENT_COVER_FALLBACK } from "@/lib/event-image";
@@ -381,14 +382,28 @@ function dedupeRepeatedTelegramEventPosts(events: SportEvent[]): SportEvent[] {
 }
 
 export function telegramPostsToSportEvents(posts: TelegramPost[]): SportEvent[] {
-  const out: SportEvent[] = [];
-  const seenIds = new Set<number>();
+  const parsedRows: {
+    raw: TelegramPost;
+    bodyPlain: string;
+    meta: ParsedEventFromTelegram;
+    eventIso: string;
+  }[] = [];
 
   for (const raw of posts) {
     const extracted = parseTelegramPostForDashboard(raw);
     if (!extracted) continue;
     const { bodyPlain, meta, eventIso } = extracted;
+    parsedRows.push({ raw, bodyPlain, meta, eventIso });
+  }
 
+  const dominantKeys = dominantPosterAssetKeysAcrossPosts(
+    parsedRows.map((r) => r.raw),
+  );
+
+  const out: SportEvent[] = [];
+  const seenIds = new Set<number>();
+
+  for (const { raw, bodyPlain, meta, eventIso } of parsedRows) {
     const eventIsoParsed = eventIso;
     const state = eventDateState(eventIsoParsed);
     const title =
@@ -430,7 +445,7 @@ export function telegramPostsToSportEvents(posts: TelegramPost[]): SportEvent[] 
     if (seenIds.has(raw.postId)) continue;
     seenIds.add(raw.postId);
 
-    const coverCandidates = telegramPostCoverCandidates(raw);
+    const coverCandidates = telegramPostCoverCandidates(raw, dominantKeys);
     const image = coverCandidates[0] ?? EVENT_COVER_FALLBACK;
     const imageAlternates = coverCandidates
       .slice(1)

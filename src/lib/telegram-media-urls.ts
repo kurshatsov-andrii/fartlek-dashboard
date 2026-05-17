@@ -349,7 +349,12 @@ export function mergeTelegramPostImageSources(
   const fromText = extractImageUrlsFromPlainText(plainText);
   const seen = new Set<string>();
   const merged: string[] = [];
-  for (const bucket of [bubbleOrdered, sweep, fromText]) {
+  /**
+   * Спочатку повний HTML і текст — там зазвичай унікальна афіша допису.
+   * Колонка `images` з БД нерідко містить одне й те саме службове превʼю каналу на багатьох рядках,
+   * і якщо ставити її першою, вона «перемагає» й глушить правильні URL з HTML.
+   */
+  for (const bucket of [sweep, fromText, bubbleOrdered]) {
     for (const raw of bucket) {
       const n =
         normalizeTelegramAssetUrl(raw) ??
@@ -384,26 +389,100 @@ export function expandTelegramPostImages(post: TelegramPost): string[] {
   return finalizePosterImageUrls(withLinks);
 }
 
-/** Упорядковані кандидати обкладинки (основний + запасні для картки при помилці завантаження). */
-export function telegramPostCoverCandidates(post: TelegramPost): string[] {
+/** Об'єднаний порядок URL превʼю (розширений HTML + колонка БД) перед вибором обкладинки. */
+export function mergedPosterOrderedUrls(post: TelegramPost): string[] {
   const row = finalizePosterImageUrls(post.images);
   const expanded = expandTelegramPostImages(post);
   const seen = new Set<string>();
   const ordered: string[] = [];
-  /** Спочатку розширений список (HTML + текст), потім лише колонка БД — щоб актуальні URL з превʼю не програвали застарілім `images`. */
   for (const u of [...expanded, ...row]) {
     if (seen.has(u)) continue;
     seen.add(u);
     ordered.push(u);
   }
+  return ordered;
+}
+
+/**
+ * CDN-ключі превʼю, які повторюються у надто багатьох дописах дашборду (типове спільне превʼю каналу у віджеті).
+ * Логіка узгоджена з refresh job (`refresh-telegram-post-images-job`).
+ */
+export function dominantPosterAssetKeysAcrossPosts(
+  posts: readonly TelegramPost[],
+  ratio = 0.42,
+): Set<string> {
+  const lists = posts.map((p) => mergedPosterOrderedUrls(p));
+  const n = posts.length;
+
+  const freq = new Map<string, number>();
+  for (const list of lists) {
+    const uniqKeys = new Set(list.map((u) => canonicalTelegramAssetUrlKey(u)));
+    for (const k of uniqKeys) freq.set(k, (freq.get(k) ?? 0) + 1);
+  }
+
+  const nonemptyLists = lists.filter((l) => l.length > 0);
+  const nonEmptyPostCount = nonemptyLists.length;
+
+  const freqAmongNonEmpty = new Map<string, number>();
+  for (const list of nonemptyLists) {
+    const uniqKeys = new Set(list.map((u) => canonicalTelegramAssetUrlKey(u)));
+    for (const k of uniqKeys) {
+      freqAmongNonEmpty.set(k, (freqAmongNonEmpty.get(k) ?? 0) + 1);
+    }
+  }
+
+  const dominantKeys = new Set<string>();
+  const thresholdAll = Math.max(2, Math.ceil(n * ratio));
+  const thresholdAmongNonEmpty =
+    nonEmptyPostCount >= 4
+      ? Math.max(3, Math.ceil(nonEmptyPostCount * ratio))
+      : Infinity;
+
+  if (n >= 5) {
+    for (const [k, c] of freq) {
+      if (c >= thresholdAll) dominantKeys.add(k);
+    }
+  }
+
+  if (Number.isFinite(thresholdAmongNonEmpty)) {
+    for (const [k, c] of freqAmongNonEmpty) {
+      if (c >= thresholdAmongNonEmpty) dominantKeys.add(k);
+    }
+  }
+
+  return dominantKeys;
+}
+
+export function pickCoverAvoidingDominantKeys(
+  ordered: readonly string[],
+  dominantKeys: ReadonlySet<string>,
+): string | undefined {
+  if (ordered.length === 0) return undefined;
+  const filtered = ordered.filter(
+    (u) => !dominantKeys.has(canonicalTelegramAssetUrlKey(u)),
+  );
+  const pool = filtered.length > 0 ? filtered : ordered;
+  return pickCoverUrlFromPosterList(pool);
+}
+
+/** Упорядковані кандидати обкладинки (основний + запасні для картки при помилці завантаження). */
+export function telegramPostCoverCandidates(
+  post: TelegramPost,
+  dominantKeys?: ReadonlySet<string>,
+): string[] {
+  const ordered = mergedPosterOrderedUrls(post);
   if (ordered.length === 0) return [EVENT_COVER_FALLBACK];
 
-  /** Завжди з повного merged-списку; інакше при непустому `images` ігнорувались би додаткові кадри з `raw_html`. */
-  const primary = pickCoverUrlFromPosterList(ordered);
-  if (!primary) return [EVENT_COVER_FALLBACK];
+  const primary =
+    dominantKeys && dominantKeys.size > 0
+      ? pickCoverAvoidingDominantKeys(ordered, dominantKeys)
+      : pickCoverUrlFromPosterList(ordered);
+  const resolvedPrimary =
+    primary ?? pickCoverUrlFromPosterList(ordered);
+  if (!resolvedPrimary) return [EVENT_COVER_FALLBACK];
 
-  const rest = ordered.filter((u) => u !== primary);
-  return [primary, ...rest].slice(0, 12);
+  const rest = ordered.filter((u) => u !== resolvedPrimary);
+  return [resolvedPrimary, ...rest].slice(0, 12);
 }
 
 export function pickTelegramPostCoverUrl(post: TelegramPost): string {
