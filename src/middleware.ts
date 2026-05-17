@@ -8,9 +8,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /**
-     * Публічний проксі обкладинок: без Supabase session на кожен thumbnail,
+     * Публічний проксі обкладинок і POST превʼю з поста: без Supabase session на кожен запит,
      * інакше на Vercel легко отримувати обриви/повільні відповіді.
      */
-    "/((?!_next/static|_next/image|favicon.ico|api/event-image|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|api/event-image|api/telegram-post-cover|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

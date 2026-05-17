@@ -12,6 +12,7 @@ import {
   eventCoverImageUrl,
   eventImagePreferPostBody,
 } from "@/lib/event-image";
+import { acceptsParserExtractedMediaUrl } from "@/lib/telegram-media-urls";
 import { FARTLEK_PUBLIC_TELEGRAM_URL } from "@/lib/fartlek-telegram-public";
 import { cn } from "@/lib/utils";
 
@@ -214,6 +215,16 @@ export function EventCoverImage({
     if (blobUrl) return [blobUrl, activeOriginal, EVENT_COVER_FALLBACK];
     if (preferPostBody)
       return [activeOriginal, proxiedUrl, EVENT_COVER_FALLBACK];
+    /**
+     * Спочатку прямий HTTPS до CDN Telegram у браузері: з IP користувача файл частіше віддається,
+     * ніж із сервера Vercel через /api/event-image (який тоді дає 502 і «лише логотип» на кожній картці).
+     */
+    if (
+      proxiedUrl !== activeOriginal &&
+      acceptsParserExtractedMediaUrl(activeOriginal.trim())
+    ) {
+      return [activeOriginal, proxiedUrl, EVENT_COVER_FALLBACK];
+    }
     if (proxiedUrl !== activeOriginal)
       return [proxiedUrl, activeOriginal, EVENT_COVER_FALLBACK];
     return [activeOriginal, EVENT_COVER_FALLBACK];
