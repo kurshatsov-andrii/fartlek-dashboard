@@ -160,19 +160,27 @@ export function telegramPostShouldSyncToDb(post: TelegramPost): boolean {
 }
 
 /**
+ * Після кириличного «км» у JS `\b` ненадійний (латиниця vs кирилиця).
+ * Явний lookahead: пробіл, пунктуація, `|`, кінець (у т.ч. «22 км ?q=» після зламаного #хештегу).
+ */
+const KM_CYR_END = String.raw`(?=[\s,.;:!?)\]»"\u2014\u2013\-–|]|$)`;
+const RE_KM_SPACED = new RegExp(String.raw`\d+[,.]?\d*\s*км${KM_CYR_END}`, "iu");
+const RE_KM_GLUED = new RegExp(String.raw`\d+[,.]?\d*км${KM_CYR_END}`, "iu");
+
+/**
  * Є згадка дистанції в км / K у тексті допису (умова включення до дашборду).
  * У афішах трапляються кирилична «К» замість латинської K (як «6 К» після VERTICAL тощо)
  * Типові афішні рядки: «6 км», «9 км, 23 км»; також km, K та кирилична «К» після числа.
  */
 export function mentionsKilometers(text: string): boolean {
   /** «Число + пробіл(и) + км» — основний кейс каналів (після preprocess і NBSP тощо). */
-  if (/\d+[,.]?\d*\s*(км\b|км\.|км,)/iu.test(text)) return true;
+  if (RE_KM_SPACED.test(text)) return true;
   /** лат. k/K, кирилична К/к — окремий токен після числа */
   if (/\b\d+[,.]?\d*\s*[kKКк]\b/u.test(text)) return true;
   if (/\d+[,.]?\d*km\b/iu.test(text)) return true;
   if (/\b\d+[,.]?\d*\s+km\b/i.test(text)) return true;
   /** «23км» без проміжку */
-  if (/\d+[,.]?\d*км\b/iu.test(text)) return true;
+  if (RE_KM_GLUED.test(text)) return true;
   /** трейлові блоки каналів: число поруч із міткою дистанції */
   if (
     /\b(?:VERTICAL|LITE|MARATHON|ULTRA|MEDIUM|HALF|SPRINT|Sprint)\b[^\n|\r]{0,60}\d+[,.]?\d*/i.test(
@@ -195,8 +203,8 @@ export function mentionsKilometers(text: string): boolean {
 /** Збирає збіги на кшталт «10 км», «1км», «21 K», «5 km» — унікальні, до 10. */
 function pickDistanceUniqueList(src: string): string[] {
   const patterns: RegExp[] = [
-    /\d+[,.]?\d*\s*км(?:\.|,)?(?=[\s,;).\]!?…]|$)/giu,
-    /\d+[,.]?\d*км\b/giu,
+    new RegExp(String.raw`\d+[,.]?\d*\s*км${KM_CYR_END}`, "giu"),
+    new RegExp(String.raw`\d+[,.]?\d*км${KM_CYR_END}`, "giu"),
     /\d+[,.]?\d*\s+km\b/gi,
     /\d+[,.]?\d*\s+[kK](?=\s|,|;|$|\)|]|!)/g,
     /\d+[,.]?\d*[kK](?=\s|,|;|$|\)|]|!|[\u0400-\u04FF])/g,
@@ -208,7 +216,9 @@ function pickDistanceUniqueList(src: string): string[] {
   const pushFormatted = (raw: string) => {
     let t = raw.replace(/\s+/g, " ").trim();
     if (!t) return;
-    const glued = /^(\d+[,.]?\d*)км\b$/iu.exec(t.replace(/\s/g, ""));
+    const glued = new RegExp(String.raw`^(\d+[,.]?\d*)км${KM_CYR_END}$`, "iu").exec(
+      t.replace(/\s/g, ""),
+    );
     if (glued?.[1]) t = `${glued[1]} км`;
     const dedupKey = t.toLowerCase().replace(",", ".").replace(/\s/g, "");
     if (seen.has(dedupKey)) return;
@@ -223,8 +233,10 @@ function pickDistanceUniqueList(src: string): string[] {
 
   if (unique.length > 0) return unique.slice(0, 10);
 
-  const trailKm =
-    /((?:\d+[,.]?\d*\s*[,+]?\s*)+\d+[,.]?\d*)\s*км\b/iu.exec(src);
+  const trailKm = new RegExp(
+    String.raw`((?:\d+[,.]?\d*\s*[,+]?\s*)+\d+[,.]?\d*)\s*км${KM_CYR_END}`,
+    "iu",
+  ).exec(src);
   if (trailKm?.[0]) {
     const t = trailKm[0].replace(/\s+/g, " ").trim().slice(0, 140);
     return t ? [t] : [];
@@ -240,7 +252,9 @@ function mergeDistanceLists(lists: string[][]): string[] {
     for (const raw of list) {
       let t = raw.replace(/\s+/g, " ").trim();
       if (!t) continue;
-      const glued = /^(\d+[,.]?\d*)км\b$/iu.exec(t.replace(/\s/g, ""));
+      const glued = new RegExp(String.raw`^(\d+[,.]?\d*)км${KM_CYR_END}$`, "iu").exec(
+        t.replace(/\s/g, ""),
+      );
       if (glued?.[1]) t = `${glued[1]} км`;
       const dedupKey = t.toLowerCase().replace(",", ".").replace(/\s/g, "");
       if (seen.has(dedupKey)) continue;
