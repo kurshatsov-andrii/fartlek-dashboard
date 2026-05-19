@@ -43,3 +43,23 @@ export function stripUrlsFromAfficheText(text: string): string {
 
   return t;
 }
+
+/** Перший непорожній рядок афіші (назва події в дописі). */
+export function afficheFirstLine(text: string): string {
+  const plain = stripUrlsFromAfficheText(text);
+  if (!plain) return "";
+  return plain.split(/\r?\n/).find((line) => line.trim())?.trim() ?? "";
+}
+
+/** Текст афіші без першого рядка (щоб не дублювати заголовок). */
+export function afficheBodyAfterFirstLine(text: string): string {
+  const plain = stripUrlsFromAfficheText(text);
+  if (!plain) return "";
+  const lines = plain.split(/\r?\n/);
+  const firstIdx = lines.findIndex((line) => line.trim());
+  if (firstIdx < 0) return "";
+  return lines
+    .slice(firstIdx + 1)
+    .join("\n")
+    .trim();
+}

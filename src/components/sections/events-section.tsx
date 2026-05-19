@@ -38,6 +38,7 @@ const CATEGORY_OPTIONS: { value: EventCategory; label: string }[] = [
   { value: "swimming", label: "Плавання" },
   { value: "triathlon", label: "Триатлон" },
   { value: "duathlon", label: "Дуатлон" },
+  { value: "aquathlon", label: "Акватлон" },
   { value: "kids", label: "Дитячий" },
   { value: "obstacle", label: "Перешкоди" },
 ];

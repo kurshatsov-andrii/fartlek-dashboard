@@ -296,9 +296,13 @@ function parseOrganizerLine(text: string): string | null {
 export function inferEventCategory(postText: string): EventCategory {
   const pt = postText;
   const low = pt.toLowerCase();
+  if (/swimrun|swim\s*run|акватлон|#\s*акватлон/i.test(low)) return "aquathlon";
   if (/#\s*дуатлон\b|дуатлон/i.test(pt)) return "duathlon";
-  if (/крос.?триатлон|#\s*триатлон\b|\bтриатлон\b/i.test(pt)) return "triathlon";
-  if (/swimrun|swim\s*&?\s*run|#\s*акватлон/i.test(low)) return "triathlon";
+  if (
+    /\btriathlon\b/i.test(low) ||
+    /крос[\s-]?триатлон|#\s*триатлон\b|\bтриатлон\b/i.test(pt)
+  )
+    return "triathlon";
   if (/#\s*вело\b|🚴|\.вело\b/i.test(pt)) return "cycling";
   if (/#\s*плавання\b|\bплавання\b|🏊/i.test(pt)) return "swimming";
   if (/#\s*трейл\b|трейл(?!-б)|trail\s*battle|\btrail\b/i.test(low)) return "trail";
@@ -433,7 +437,7 @@ export function telegramPostsToSportEvents(posts: TelegramPost[]): SportEvent[] 
       lng: KYIV_FALLBACK.lng,
     };
 
-    const category = inferEventCategory(bodyPlain);
+    const category = inferEventCategory(`${title}\n${bodyPlain}`);
 
     /** Первинне посилання на афішу — сторінка аналітики; t.me лишається в CTA. */
     const registrationLink = `https://t.me/${raw.channelId}/${raw.postId}`;

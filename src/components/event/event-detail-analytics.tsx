@@ -13,6 +13,7 @@ import {
 import { Eye, Heart, TrendingUp } from "lucide-react";
 import type { SportEvent } from "@/types";
 import { categoryLabel } from "@/lib/analytics";
+import { resolveEventCategory } from "@/lib/event-category";
 import { compactNumber, formatUAH } from "@/lib/utils";
 import {
   engagementPercent,
@@ -41,6 +42,7 @@ export function EventDetailAnalytics({
   event,
   allEvents,
 }: EventDetailAnalyticsProps) {
+  const category = resolveEventCategory(event);
   const avg = meanViews(allEvents);
   const avgLikes = meanLikes(allEvents);
   const avgCat = meanViewsInCategory(event, allEvents);
@@ -54,7 +56,7 @@ export function EventDetailAnalytics({
   const chartData = [
     { name: "Ця подія", Перегляди: event.views },
     { name: "Середнє (усі)", Перегляди: Math.round(avg) },
-    { name: `Сер. (${categoryLabel(event.category)})`, Перегляди: Math.round(avgCat) },
+    { name: `Сер. (${categoryLabel(category)})`, Перегляди: Math.round(avgCat) },
   ];
 
   return (
@@ -125,7 +127,7 @@ export function EventDetailAnalytics({
         </h2>
         <p className="text-xs text-white/55 mb-4">
           Ця афіша проти середнього по всьому дашборду та по категорії{" "}
-          «{categoryLabel(event.category)}».
+          «{categoryLabel(category)}».
         </p>
         <div className="h-56 w-full">
           <ResponsiveContainer width="100%" height="100%">

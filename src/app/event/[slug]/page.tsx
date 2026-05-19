@@ -21,10 +21,14 @@ import { Badge } from "@/components/ui/badge";
 import { fetchTelegramDashboard } from "@/lib/telegram-dashboard-cache";
 import { sportEventAbsoluteUrl } from "@/lib/event-detail";
 import { categoryLabel } from "@/lib/analytics";
+import { resolveEventCategory } from "@/lib/event-category";
 import { formatEventDate, formatEventDateLong } from "@/lib/date";
 import { sortDistancesDisplayLine } from "@/lib/distance-sort";
 import { organizerLatinInitials } from "@/lib/organizer-initials";
-import { stripUrlsFromAfficheText } from "@/lib/affiche-text";
+import {
+  afficheBodyAfterFirstLine,
+  afficheFirstLine,
+} from "@/lib/affiche-text";
 
 /** Узгоджено з головною: свіжі event.image з Supabase без застряглого Route Cache на Vercel. */
 export const dynamic = "force-dynamic";
@@ -44,6 +48,7 @@ export async function generateMetadata({
     return { title: "Подія не знайдена" };
   }
   const canonical = sportEventAbsoluteUrl(event);
+  const category = resolveEventCategory(event);
   return {
     title: `${event.title}`,
     description: `${event.city} · ${formatEventDate(event.date)}. Перегляди, реакції та порівняння з дашбордом.`,
@@ -52,7 +57,7 @@ export async function generateMetadata({
       type: "article",
       url: canonical,
       title: event.title,
-      description: `Аналітика: ${event.city}, ${categoryLabel(event.category)}`,
+      description: `Аналітика: ${event.city}, ${categoryLabel(category)}`,
     },
   };
 }
@@ -69,7 +74,10 @@ export default async function EventAnalysisPage({
   if (!event) notFound();
 
   const distanceLine = sortDistancesDisplayLine(event.distance ?? "");
-  const affichePlain = stripUrlsFromAfficheText(event.description ?? "");
+  const category = resolveEventCategory(event);
+  const afficheHeading =
+    afficheFirstLine(event.description ?? "") || event.title;
+  const afficheBody = afficheBodyAfterFirstLine(event.description ?? "");
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "SportsEvent",
@@ -106,6 +114,7 @@ export default async function EventAnalysisPage({
               titleHint="Обкладинка події"
               variant="hero"
               className="absolute inset-0 z-0 h-full w-full"
+              event={event}
             />
             <div
               className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[52%] bg-gradient-to-t from-ink-950 to-transparent"
@@ -115,8 +124,8 @@ export default async function EventAnalysisPage({
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge status={event.status} />
                 <Badge variant="muted" className="backdrop-blur bg-ink-950/70">
-                  <CategoryIcon category={event.category} className="h-3 w-3" />
-                  {categoryLabel(event.category)}
+                  <CategoryIcon category={category} className="h-3 w-3" />
+                  {categoryLabel(category)}
                 </Badge>
               </div>
               <ShareButton event={event} />
@@ -171,14 +180,16 @@ export default async function EventAnalysisPage({
               <EventDetailAnalytics event={event} allEvents={events} />
             </div>
 
-            {affichePlain ? (
+            {afficheHeading || afficheBody ? (
               <div className="mt-8 pt-6 border-t border-white/10">
                 <h2 className="font-display text-lg font-semibold mb-3">
-                  Текст афіші
+                  {afficheHeading}
                 </h2>
-                <pre className="text-sm text-white/75 whitespace-pre-wrap font-sans leading-relaxed max-h-[420px] overflow-y-auto pr-2">
-                  {affichePlain}
-                </pre>
+                {afficheBody ? (
+                  <pre className="text-sm text-white/75 whitespace-pre-wrap font-sans leading-relaxed max-h-[420px] overflow-y-auto pr-2">
+                    {afficheBody}
+                  </pre>
+                ) : null}
               </div>
             ) : null}
 

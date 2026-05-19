@@ -12,6 +12,7 @@ export type EventCategory =
   | "swimming"
   | "triathlon"
   | "duathlon"
+  | "aquathlon"
   | "kids"
   | "obstacle";
 

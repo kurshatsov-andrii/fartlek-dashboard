@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { resolveEventCategory } from "@/lib/event-category";
 import type {
   EventCategory,
   EventFilters,
@@ -22,7 +23,11 @@ export function useEventsFilter(events: SportEvent[]) {
   const filtered = useMemo(() => {
     return events.filter((e) => {
       if (filters.city && e.city !== filters.city) return false;
-      if (filters.category && e.category !== filters.category) return false;
+      if (
+        filters.category &&
+        resolveEventCategory(e) !== filters.category
+      )
+        return false;
       if (filters.status && e.status !== filters.status) return false;
       if (
         filters.month !== null &&

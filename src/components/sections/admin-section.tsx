@@ -376,6 +376,7 @@ export function AdminSection({ events, logs }: AdminSectionProps) {
                     alt={e.title}
                     variant="thumb"
                     className="h-11 w-11 md:h-12 md:w-12 rounded-lg shrink-0 border border-white/10"
+                    event={e}
                   />
                   <div className="min-w-0 flex-1">
                     <div className="text-sm md:text-[15px] font-medium truncate">

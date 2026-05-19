@@ -1,12 +1,24 @@
+"use client";
+
+import { EventCoverArt } from "@/components/event/event-cover-art";
+import { categoryLabel } from "@/lib/analytics";
+import { resolveEventCategory } from "@/lib/event-category";
 import { cn } from "@/lib/utils";
+import type { SportEvent } from "@/types";
 
 export type EventCoverImageVariant = "card" | "hero" | "thumb";
+
+export type EventCoverImageEvent = Pick<
+  SportEvent,
+  "id" | "category" | "city" | "title" | "description"
+>;
 
 export type EventCoverImageProps = {
   alt: string;
   titleHint?: string;
   className?: string;
   variant?: EventCoverImageVariant;
+  event?: EventCoverImageEvent;
 };
 
 export function EventCoverImage({
@@ -14,41 +26,35 @@ export function EventCoverImage({
   titleHint,
   className,
   variant = "card",
+  event,
 }: EventCoverImageProps) {
   const title = alt.trim() || "Подія";
+  const compact = variant === "thumb";
+  const category = event
+    ? resolveEventCategory({
+        category: event.category,
+        title: event.title || title,
+        description: event.description,
+      })
+    : "marathon";
+  const label =
+    titleHint ??
+    (event ? `${title} · ${categoryLabel(category)} · ${event.city}` : title);
 
   return (
     <div
       role="img"
-      aria-label={titleHint ?? title}
-      title={titleHint ?? title}
-      className={cn(
-        "relative flex h-full w-full items-center justify-center overflow-hidden bg-gradient-to-br from-ink-900 via-ink-850 to-ink-900",
-        className,
-      )}
+      aria-label={label}
+      title={label}
+      className={cn("relative h-full w-full overflow-hidden", className)}
     >
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.35]"
-        style={{
-          background:
-            "radial-gradient(circle at 28% 18%, rgba(255,102,51,0.22), transparent 52%), radial-gradient(circle at 78% 82%, rgba(255,235,20,0.08), transparent 45%)",
-        }}
+      <EventCoverArt
+        seed={event?.id ?? title}
+        category={category}
+        city={event?.city ?? ""}
+        compact={compact}
+        className="absolute inset-0"
       />
-      <div className="pointer-events-none absolute inset-0 bg-grid-pattern opacity-[0.12]" />
-
-      <p
-        className={cn(
-          "relative z-[1] px-3 text-center text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]",
-          variant === "hero" &&
-            "font-display text-xl font-bold leading-snug line-clamp-5 max-w-[min(94%,680px)] px-6 sm:text-2xl md:text-3xl",
-          variant === "card" &&
-            "text-sm font-semibold leading-snug line-clamp-4 max-w-[96%] md:text-base",
-          variant === "thumb" &&
-            "text-[10px] font-semibold leading-tight line-clamp-4 max-w-[98%] md:text-[11px]",
-        )}
-      >
-        {title}
-      </p>
     </div>
   );
 }

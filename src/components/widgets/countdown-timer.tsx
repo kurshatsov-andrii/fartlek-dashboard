@@ -7,6 +7,7 @@ import { CalendarDays, MapPin, Trophy } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { formatEventDateLong } from "@/lib/date";
 import { categoryLabel } from "@/lib/analytics";
+import { resolveEventCategory } from "@/lib/event-category";
 import { sportEventPagePath } from "@/lib/event-detail";
 import type { SportEvent } from "@/types";
 
@@ -35,6 +36,7 @@ function diff(target: Date): TimeLeft {
 const ZERO: TimeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 };
 
 export function CountdownTimer({ event }: CountdownTimerProps) {
+  const category = resolveEventCategory(event);
   // SSR і перший render клієнта віддають однакові нулі, щоб уникнути
   // hydration mismatch — реальні значення з'являються після mount.
   const [time, setTime] = useState<TimeLeft>(ZERO);
@@ -66,7 +68,7 @@ export function CountdownTimer({ event }: CountdownTimerProps) {
             <Trophy className="h-3 w-3" />
             Найближча подія
           </Badge>
-          <Badge variant="muted">{categoryLabel(event.category)}</Badge>
+          <Badge variant="muted">{categoryLabel(category)}</Badge>
         </div>
 
         <h3 className="font-display text-2xl font-bold leading-tight">

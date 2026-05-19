@@ -69,6 +69,7 @@ const CATEGORY_LABELS: Record<EventCategory, string> = {
   swimming: "Плавання",
   triathlon: "Триатлон",
   duathlon: "Дуатлон",
+  aquathlon: "Акватлон",
   kids: "Дитячий",
   obstacle: "Перешкоди",
 };
@@ -81,6 +82,7 @@ const CATEGORY_COLORS: Record<EventCategory, string> = {
   swimming: "#22d3ee",
   triathlon: "#ff3d7f",
   duathlon: "#f472b6",
+  aquathlon: "#14b8a6",
   kids: "#facc15",
   obstacle: "#ff8052",
 };

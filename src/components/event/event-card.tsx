@@ -6,6 +6,7 @@ import { CalendarDays, Eye, Heart, MapPin, Ruler } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useFavorites } from "@/components/providers/favorites-provider";
 import { categoryLabel } from "@/lib/analytics";
+import { resolveEventCategory } from "@/lib/event-category";
 import { formatEventDate, fromNow } from "@/lib/date";
 import { sortDistancesDisplayLine } from "@/lib/distance-sort";
 import { organizerLatinInitials } from "@/lib/organizer-initials";
@@ -25,6 +26,7 @@ interface EventCardProps {
 export function EventCard({ event }: EventCardProps) {
   const { isFavorite, toggle } = useFavorites();
   const fav = isFavorite(event.id);
+  const category = resolveEventCategory(event);
   const distanceLine = sortDistancesDisplayLine(event.distance ?? "");
 
   return (
@@ -35,6 +37,7 @@ export function EventCard({ event }: EventCardProps) {
           titleHint={`Обкладинка події · пост у Telegram ${FARTLEK_PUBLIC_TELEGRAM_URL}`}
           variant="card"
           className="absolute inset-0 z-0 h-full w-full"
+          event={event}
         />
         <div
           className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] h-[42%] bg-gradient-to-t from-ink-950/95 to-transparent"
@@ -67,8 +70,8 @@ export function EventCard({ event }: EventCardProps) {
 
         <div className="absolute bottom-3 left-3 z-[2] flex items-center gap-2">
           <Badge variant="muted" className="bg-ink-950/70 backdrop-blur">
-            <CategoryIcon category={event.category} className="h-3 w-3" />
-            {categoryLabel(event.category)}
+            <CategoryIcon category={category} className="h-3 w-3" />
+            {categoryLabel(category)}
           </Badge>
         </div>
       </div>

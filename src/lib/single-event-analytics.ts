@@ -1,3 +1,4 @@
+import { resolveEventCategory } from "@/lib/event-category";
 import type { SportEvent } from "@/types";
 
 export function meanViews(events: SportEvent[]): number {
@@ -31,7 +32,8 @@ export function meanViewsInCategory(
   event: SportEvent,
   all: SportEvent[],
 ): number {
-  const peers = all.filter((e) => e.category === event.category);
+  const cat = resolveEventCategory(event);
+  const peers = all.filter((e) => resolveEventCategory(e) === cat);
   return meanViews(peers.length ? peers : all);
 }
 
