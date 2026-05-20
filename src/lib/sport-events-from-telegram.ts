@@ -107,7 +107,37 @@ function preprocessTelegramBody(post: TelegramPost): string {
   let t = post.text.replace(/[\u200B-\u200D\u2060\uFEFF\u2800]/g, "");
   /** NBSP, тонкий/цифровий пробіл — у превʼю t.me часто «6\u00a0км» замість «6 км». */
   t = t.replace(/[\u00a0\u1680\u2000-\u200a\u202f\u205f\u3000]/g, " ");
+  /** Хештеги з t.me-посилань пошуку: «?q=%23ocr» → «#ocr». */
+  t = t.replace(/\?q=%23([^\s&]+)/gi, (_, enc: string) => {
+    try {
+      return ` #${decodeURIComponent(enc)}`;
+    } catch {
+      return ` #${enc}`;
+    }
+  });
+  t = t.replace(/<[^>]*$/s, "").trim();
   return stripStickyFooter(t);
+}
+
+/**
+ * OCR / забіг з перешкодами: тег #OCR або згадка перешкод у тексті (напр. «Дика гонка»).
+ */
+export function isOcrOrObstacleEvent(text: string): boolean {
+  const low = text.toLowerCase();
+  if (/#\s*ocr\b/i.test(text)) return true;
+  if (/%23ocr\b/i.test(low)) return true;
+  if (/#\s*kordon\b/i.test(low)) return true;
+  /** \b перед кирилицею в JS без /u ненадійний — «20 Перешкод» інакше не матчиться. */
+  if (/перешкод/i.test(low)) return true;
+  if (/ocr/i.test(low) && /гонк/i.test(low)) return true;
+  if (/дика\s+гонк/i.test(low)) return true;
+  if (/гонк[аи]\s+з\s+перешкод/i.test(low)) return true;
+  return false;
+}
+
+/** Дистанція в км/K або OCR-подія без км у афіші. */
+export function postHasDashboardDistanceCue(text: string): boolean {
+  return mentionsKilometers(text) || isOcrOrObstacleEvent(text);
 }
 
 /** Для синку: текст причини, якщо допис не входить до дашборду; інакше `null`. */
@@ -116,8 +146,8 @@ export function telegramPostDashboardRejectReason(
 ): string | null {
   const bodyPlain = preprocessTelegramBody(post);
   const meta = parseTelegramPost({ ...post, text: bodyPlain });
-  if (!mentionsKilometers(bodyPlain))
-    return "нема згадки дистанції (км / km / K / кирилична К)";
+  if (!postHasDashboardDistanceCue(bodyPlain))
+    return "нема згадки дистанції (км / km / K / кирилична К) і не OCR/перешкоди";
   if (!hasExplicitEventDateScheduling(bodyPlain)) {
     return "немає прийнятої мітки дати або діапазону dd.mm.yyyy — dd.mm.yyyy";
   }
@@ -132,7 +162,7 @@ export function telegramPostDashboardRejectReason(
 
 /**
  * Повертає null, якщо допис не потрапляє на дашборд / у кеш таблиці:
- * лише події налаштованих років ISO-дати; згадка км/K та явний блок «Дата» у тексті.
+ * лише події налаштованих років ISO-дати; згадка км/K (або OCR/перешкоди) та явний блок «Дата» у тексті.
  */
 export function parseTelegramPostForDashboard(post: TelegramPost): {
   bodyPlain: string;
@@ -293,6 +323,92 @@ function parseOrganizerLine(text: string): string | null {
   return m?.[1]?.replace(/\s{2,}/g, " ").trim() ?? null;
 }
 
+const KIDS_CATEGORY_LABEL =
+  /#\s*дитяч\b|дитяч(ий|ої)?\s*забіг|дитяч(і|а|их|ою)?\s*дистанц/i;
+
+/** Дитяча мітка в межах одного пункту списку дистанцій (не «10 км, 5 км, дитячий забіг»). */
+const KIDS_DISTANCE_IN_SEGMENT =
+  /дитяч|для\s+дітей|\bkids\b|діт(?:и|я|яр)|вік(?:ова)?\s*(?:група|категорія)|\b\d{1,2}\s*рок/i;
+
+function kmMatchListSegment(text: string, matchIndex: number): string {
+  const before = text.slice(0, matchIndex);
+  const segStart =
+    Math.max(
+      before.lastIndexOf(","),
+      before.lastIndexOf(";"),
+      before.lastIndexOf("|"),
+      before.lastIndexOf("\n"),
+    ) + 1;
+  const afterPart = text.slice(matchIndex);
+  let segEnd = text.length;
+  for (const ch of [",", ";", "|", "\n"] as const) {
+    const i = afterPart.indexOf(ch);
+    if (i !== -1) segEnd = Math.min(segEnd, matchIndex + i);
+  }
+  return text.slice(segStart, segEnd).trim();
+}
+
+function segmentHasKidsCue(seg: string): boolean {
+  return KIDS_DISTANCE_IN_SEGMENT.test(seg);
+}
+
+/** Усі збіги «N км» / km / K у тексті з позицією для перевірки контексту. */
+function findKmDistanceMatches(text: string): { index: number }[] {
+  const patterns: RegExp[] = [
+    new RegExp(String.raw`\d+[,.]?\d*\s*км${KM_CYR_END}`, "giu"),
+    new RegExp(String.raw`\d+[,.]?\d*км${KM_CYR_END}`, "giu"),
+    /\d+[,.]?\d*\s+km\b/gi,
+    /\d+[,.]?\d*\s+[kK](?=\s|,|;|$|\)|]|!)/g,
+    /\d+[,.]?\d*[kK](?=\s|,|;|$|\)|]|!|[\u0400-\u04FF])/g,
+  ];
+
+  const seen = new Set<number>();
+  const out: { index: number }[] = [];
+
+  for (const re of patterns) {
+    re.lastIndex = 0;
+    for (const m of text.matchAll(re)) {
+      const idx = m.index;
+      if (idx === undefined || seen.has(idx)) continue;
+      seen.add(idx);
+      out.push({ index: idx });
+    }
+  }
+
+  return out;
+}
+
+function hasKidsRaceElement(postText: string): boolean {
+  if (KIDS_CATEGORY_LABEL.test(postText.toLowerCase())) return true;
+  for (const { index } of findKmDistanceMatches(postText)) {
+    if (segmentHasKidsCue(kmMatchListSegment(postText, index))) return true;
+  }
+  return false;
+}
+
+/**
+ * Інші бігові дистанції (км) без дитячої мітки в тому ж пункті списку.
+ * «10 км, 5 км, дитячий забіг» → є бігові пункти → не дитяча категорія всього івенту.
+ */
+function hasOtherRunningDistances(postText: string): boolean {
+  for (const { index } of findKmDistanceMatches(postText)) {
+    const seg = kmMatchListSegment(postText, index);
+    if (!segmentHasKidsCue(seg)) return true;
+  }
+  return false;
+}
+
+/**
+ * Категорія «Дитячий» лише для чисто дитячих стартів.
+ * Є дитяча опція + будь-які інші бігові км → «Біг» (marathon).
+ */
+export function shouldClassifyAsKidsOnly(postText: string): boolean {
+  const hasKids = hasKidsRaceElement(postText);
+  if (!hasKids) return false;
+  if (hasOtherRunningDistances(postText)) return false;
+  return true;
+}
+
 export function inferEventCategory(postText: string): EventCategory {
   const pt = postText;
   const low = pt.toLowerCase();
@@ -305,9 +421,9 @@ export function inferEventCategory(postText: string): EventCategory {
     return "triathlon";
   if (/#\s*вело\b|🚴|\.вело\b/i.test(pt)) return "cycling";
   if (/#\s*плавання\b|\bплавання\b|🏊/i.test(pt)) return "swimming";
+  if (isOcrOrObstacleEvent(postText)) return "obstacle";
   if (/#\s*трейл\b|трейл(?!-б)|trail\s*battle|\btrail\b/i.test(low)) return "trail";
-  if (/#\s*ocr\b|перешкод|#\s*kordon/i.test(low)) return "obstacle";
-  if (/#\s*дитяч\b|дитяч(ий|ої)?\s*забіг/i.test(low)) return "kids";
+  if (shouldClassifyAsKidsOnly(postText)) return "kids";
   if (/\bультра\b|#\s*ультра\b|backyard\s*ultra/i.test(low)) return "ultra";
   return "marathon";
 }

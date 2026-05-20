@@ -54,7 +54,7 @@ async function assembleDashboard(): Promise<{
   const modeMsg =
     posts.length === 0
       ? "Таблиця порожня — викличте POST /api/sync-telegram або npm run sync:supabase:reset2026."
-      : `Зчитано ${posts.length} дописів з Supabase; на дашборді подій (роки ISO: ${targetYearsLabel}) із дистанцією км: ${events.length}.`;
+      : `Зчитано ${posts.length} дописів з Supabase; на дашборді подій (роки ISO: ${targetYearsLabel}, км або OCR): ${events.length}.`;
 
   const logs: ImportLogEntry[] = [
     {

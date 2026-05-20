@@ -3,12 +3,12 @@
 import {
   Baby,
   Bike,
-  Droplets,
   Flame,
   Footprints,
   Mountain,
   Waves,
 } from "lucide-react";
+import { ObstacleRaceIcon } from "@/components/icons/obstacle-race-icon";
 import type { EventCategory } from "@/types";
 import { cn } from "@/lib/utils";
 
@@ -24,7 +24,7 @@ const SINGLE_ICON: Record<
   cycling: Bike,
   swimming: Waves,
   kids: Baby,
-  obstacle: Droplets,
+  obstacle: ObstacleRaceIcon,
 };
 
 const MULTI_LABEL: Record<"triathlon" | "duathlon" | "aquathlon", string> = {

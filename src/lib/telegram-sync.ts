@@ -14,7 +14,7 @@ export interface TelegramSyncResult {
   fetchedAt: string;
   /** Рядків з Telegram після дедупу (до фільтру) */
   fetchedBeforeFilter: number;
-  /** Потрапляють у БД (роки з `DASHBOARD_TELEGRAM_TARGET_YEAR_PREFIXES`, дата в тексті + км) */
+  /** Потрапляють у БД (роки з `DASHBOARD_TELEGRAM_TARGET_YEAR_PREFIXES`, дата в тексті + км або OCR) */
   remoteCount: number;
   /** Upsert у Supabase */
   upsertedCount: number;
