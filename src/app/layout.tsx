@@ -2,7 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { FavoritesProvider } from "@/components/providers/favorites-provider";
+import { getGoogleSiteVerificationToken } from "@/lib/google-site-verification";
 import { FARTLEK_PUBLIC_TELEGRAM_URL } from "@/lib/fartlek-telegram-public";
+import { getCanonicalSiteUrl } from "@/lib/site-url";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +24,8 @@ const spaceGrotesk = Space_Grotesk({
   display: "swap",
 });
 
-const siteUrl = "https://fartlek.events";
+const siteUrl = getCanonicalSiteUrl();
+const googleVerification = getGoogleSiteVerificationToken();
 const siteTitle = "Fartlek Events 2026 — Спортивні події України";
 const siteDescription =
   `Преміум-дашборд спортивних подій України. Марафони, трейли, велозаїзди, запливи та триатлони в 22+ містах. Живий календар, профілі організаторів та оновлення з Telegram-каналу ${FARTLEK_PUBLIC_TELEGRAM_URL}.`;
@@ -80,6 +83,9 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  ...(googleVerification ?
+    { verification: { google: googleVerification } }
+  : {}),
 };
 
 export const viewport: Viewport = {

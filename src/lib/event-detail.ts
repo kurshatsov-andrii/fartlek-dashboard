@@ -1,6 +1,7 @@
 import type { SportEvent } from "@/types";
+import { absoluteSiteUrl } from "@/lib/site-url";
 
-export const FARTLEK_SITE_ORIGIN = "https://fartlek.events";
+export const FARTLEK_SITE_ORIGIN = "https://fartlek-dashboard.vercel.app";
 
 /** Шлях до сторінки аналітики події на цьому сайті. */
 export function sportEventPagePath(event: Pick<SportEvent, "slug">): string {
@@ -10,5 +11,5 @@ export function sportEventPagePath(event: Pick<SportEvent, "slug">): string {
 export function sportEventAbsoluteUrl(
   event: Pick<SportEvent, "slug">,
 ): string {
-  return `${FARTLEK_SITE_ORIGIN}${sportEventPagePath(event)}`;
+  return absoluteSiteUrl(sportEventPagePath(event));
 }

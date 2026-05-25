@@ -68,6 +68,12 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
+### SEO (sitemap + Google Search Console)
+
+- **Sitemap:** [http://localhost:3000/sitemap.xml](http://localhost:3000/sitemap.xml) (у продакшені — `https://<домен>/sitemap.xml`).
+- Задайте `NEXT_PUBLIC_SITE_URL` на продакшен-домен, щоб URL у sitemap збігалися з GSC.
+- Підключення GSC: [docs/google-search-console.md](./docs/google-search-console.md).
+
 ### Scripts
 
 | Command | Description |

@@ -168,10 +168,12 @@ function EventsSectionContent({ upcoming, finished }: EventsSectionProps) {
                 onChange={(e) =>
                   updateFilter("city", e.target.value || null)
                 }
-                options={UKRAINE_CITIES.map((c) => ({
-                  value: c.name,
-                  label: c.name,
-                }))}
+                options={[...UKRAINE_CITIES]
+                  .sort((a, b) => a.name.localeCompare(b.name, "uk"))
+                  .map((c) => ({
+                    value: c.name,
+                    label: c.name,
+                  }))}
                 placeholder="Усі міста"
                 aria-label="Фільтр за містом"
               />

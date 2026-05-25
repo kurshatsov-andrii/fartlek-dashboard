@@ -1,40 +1,34 @@
 import { sportEventAbsoluteUrl } from "@/lib/event-detail";
+import { absoluteSiteUrl, getCanonicalSiteUrl } from "@/lib/site-url";
 import { fetchTelegramDashboard } from "@/lib/telegram-dashboard-cache";
 import type { MetadataRoute } from "next";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = "https://fartlek.events";
   const now = new Date();
   const staticUrls: MetadataRoute.Sitemap = [
     {
-      url: base,
+      url: getCanonicalSiteUrl(),
       lastModified: now,
       changeFrequency: "daily",
       priority: 1,
     },
     {
-      url: `${base}/#events`,
-      lastModified: now,
-      changeFrequency: "daily",
-      priority: 0.9,
-    },
-    {
-      url: `${base}/#calendar`,
-      lastModified: now,
-      changeFrequency: "weekly",
-      priority: 0.8,
-    },
-    {
-      url: `${base}/tools/pace`,
+      url: absoluteSiteUrl("/tools/pace"),
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.75,
     },
     {
-      url: `${base}/contacts`,
+      url: absoluteSiteUrl("/contacts"),
       lastModified: now,
       changeFrequency: "monthly",
       priority: 0.72,
+    },
+    {
+      url: absoluteSiteUrl("/assistant"),
+      lastModified: now,
+      changeFrequency: "weekly",
+      priority: 0.7,
     },
   ];
 
